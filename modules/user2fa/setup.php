@@ -89,8 +89,21 @@ if ( $http->hasPostVariable( 'SetupButton' ) )
         sevenxAuthentication2faHelper::authLog( '2fa_setup_disabled', '2fa disabled', $userID );
         $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication disabled.' );
     }
+}
+elseif ( $http->hasPostVariable( 'ResetButton' ) )
+{
+    $data = new sevenxAuthentication2fa();
+    sevenxAuthentication2faHelper::authLog( '2fa_setup_reset', '2fa configuration reset by user', $userID );
+    $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication configuration has been reset.' );
+}
+else
+{
+    sevenxAuthentication2faHelper::authLog( '2fa_setup_view', 'setup page viewed', $userID );
+}
 
-    // Persist back to the first sevenxauthentication2fa attribute on the user object.
+// Persist back to the first sevenxauthentication2fa attribute on the user object when the form was submitted.
+if ( $http->hasPostVariable( 'SetupButton' ) || $http->hasPostVariable( 'ResetButton' ) )
+{
     $object = $currentUser->contentObject();
     $language = $object->attribute( 'initial_language_code' );
     if ( !$language )
@@ -104,10 +117,6 @@ if ( $http->hasPostVariable( 'SetupButton' ) )
             break;
         }
     }
-}
-else
-{
-    sevenxAuthentication2faHelper::authLog( '2fa_setup_view', 'setup page viewed', $userID );
 }
 
 $secret = $data->secret() ? $data->secret() : sevenxAuthentication2faTOTP::generateSecret();

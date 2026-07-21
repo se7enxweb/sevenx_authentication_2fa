@@ -49,7 +49,7 @@
             </form>
 
             <div class="block">
-                <a class="button" href="{$redirect_uri|wash}">{'Back'|i18n( 'extension/sevenx_authentication_2fa' )}</a>
+                <a class="button" href="javascript:history.back()">{'Back'|i18n( 'extension/sevenx_authentication_2fa' )}</a>
             </div>
         {/if}
     </div>

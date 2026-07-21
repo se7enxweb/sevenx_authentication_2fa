@@ -60,6 +60,23 @@
             </div>
         </form>
 
+        <div class="block">
+            <input class="button" type="submit" value="{'Back'|i18n( 'extension/sevenx_authentication_2fa' )}" onclick="history.back(); return false;" />
+        </div>
+
+        {if ne( $data.method, 'disabled' )}
+        <div class="block" style="margin-top: 3em; padding-top: 1.5em; border-top: 1px solid #ccc;">
+            <div class="warning">
+                <h2>{'Reset two-factor authentication'|i18n( 'extension/sevenx_authentication_2fa' )}</h2>
+                <p>{'Use this button only if you want to remove your existing 2FA configuration permanently.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+            </div>
+
+            <form method="post" action={concat( 'user2fa/setup' )|ezurl( 'no' )}>
+                <input class="button" type="submit" name="ResetButton" value="{'Reset 2FA'|i18n( 'extension/sevenx_authentication_2fa' )}" onclick="return confirm( '{'This will permanently remove your existing two-factor authentication configuration data. This is a data loss event. Are you sure you want to continue?'|i18n( 'extension/sevenx_authentication_2fa' )|wash(javascript)}' );" />
+            </form>
+        </div>
+        {/if}
+
         <script type="text/javascript">
         {literal}
         (function() {
