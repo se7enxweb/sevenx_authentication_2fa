@@ -1,0 +1,29 @@
+{
+    "name": "se7enxweb/sevenx_authentication_2fa",
+    "description": "Two-factor authentication (TOTP / email OTP) and OAuth social-login handler skeletons for Exponential / eZ Publish Legacy.",
+    "type": "ezpublish-legacy-extension",
+    "keywords": [ "eZ Publish", "eZ Publish Legacy", "Exponential", "2FA", "TOTP", "OAuth", "social login", "authentication" ],
+    "homepage": "https://se7enx.com",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "7x",
+            "homepage": "https://se7enx.com",
+            "email": "info@se7enx.com",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.3.0",
+        "se7enxweb/exponential-legacy-installer": "*"
+    },
+    "suggest": {
+        "ext-json": "OAuth social handlers use JSON decoding for provider responses",
+        "ext-hash": "TOTP generation uses hash_hmac()",
+        "ext-curl": "OAuth handlers use cURL for token / userinfo requests"
+    },
+    "extra": {
+        "ezpublish-legacy-extension-name": "sevenx_authentication_2fa"
+    }
+}
