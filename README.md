@@ -93,6 +93,23 @@ should be removed or commented so the override order takes effect.
 Configure the extension in `extension/sevenx_authentication_2fa/settings/sevenxauthentication2fa.ini.append.php`
 or override it in `settings/override/sevenxauthentication2fa.ini.append.php`.
 
+### Role policies and permissions
+
+The `user2fa` module defines four policy functions: `setup`, `verify`, `oauth`,
+and `callback`. Grant them through eZ Publish **Roles and policies** (the
+`user2fa` module policies, not `PolicyOmitList`).
+
+| View | Required role policies |
+|------|------------------------|
+| `/user2fa/oauth/<provider>` | Grant `user2fa/oauth` to the **Anonymous** role. |
+| `/user2fa/callback/<provider>` | Grant `user2fa/callback` to the **Anonymous** role. |
+| `/user2fa/verify` | Grant `user2fa/verify` to the **Anonymous** role (so users can complete 2FA before they are logged in) and to every role that uses 2FA, such as Member, Editor, Partner or Administrator. |
+| `/user2fa/setup` | Grant `user2fa/setup` to the **Member**, **Editor**, **Partner**, **Administrator**, or any custom user role that should manage 2FA. |
+
+The Anonymous user is still a session user while the 2FA challenge is pending,
+so `user2fa/verify` must be granted to Anonymous. The view scripts enforce their
+own state checks (`verify.php` only processes a valid pending challenge).
+
 Available 2FA methods:
 
 - `totp` — authenticator app

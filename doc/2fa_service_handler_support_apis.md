@@ -112,6 +112,23 @@ ID.me-specific handler that extends `eZOAuthUser`.
 | `/user2fa/oauth/<provider>` | Redirect to the OAuth authorization endpoint. |
 | `/user2fa/callback/<provider>` | OAuth callback that exchanges code, fetches profile and logs in. |
 
+### Module permissions
+
+The `user2fa` module declares four policy functions in `module.php`:
+`setup`, `verify`, `oauth`, and `callback`. The extension relies on eZ Publish
+**Roles and policies** only; `PolicyOmitList` is not used.
+
+| View | Policy function | Required role policies |
+|------|-----------------|------------------------|
+| `/user2fa/setup` | `setup` | Grant `user2fa/setup` to **Member**, **Editor**, **Partner**, **Administrator**, or any role that should manage 2FA. |
+| `/user2fa/verify` | `verify` | Grant `user2fa/verify` to the **Anonymous** role (a user is anonymous while the 2FA challenge is pending) and to every role that uses 2FA, such as Member, Editor, Partner or Administrator. |
+| `/user2fa/oauth/<provider>` | `oauth` | Grant `user2fa/oauth` to the **Anonymous** role. |
+| `/user2fa/callback/<provider>` | `callback` | Grant `user2fa/callback` to the **Anonymous** role. |
+
+The views enforce their own state checks. For example, `verify.php` only
+processes a request when a valid pending challenge exists in the session, so
+granting `user2fa/verify` to Anonymous is safe.
+
 ## Login Handlers
 
 Place a class file in `extension/<ext>/login_handler/ez<protocol>user.php`:

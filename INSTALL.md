@@ -28,6 +28,23 @@ php bin/php/ezpgenerateautoloads.php
 php bin/php/ezcache.php --clear-all --allow-root-user
 ```
 
+4. Configure role policies.
+
+The `user2fa` module exposes four policy functions: `setup`, `verify`, `oauth`,
+and `callback`. Without the correct role policies the OAuth and 2FA flows will
+return "View not found" or access-denied errors. The extension is designed to
+use eZ Publish **Roles and policies** only.
+
+| View | Who needs it | Required role policy |
+|------|--------------|----------------------|
+| `/user2fa/oauth/<provider>` | Anonymous users | Grant `user2fa/oauth` to the **Anonymous** role. |
+| `/user2fa/callback/<provider>` | Anonymous users | Grant `user2fa/callback` to the **Anonymous** role. |
+| `/user2fa/verify` | Anonymous and every role using 2FA | Grant `user2fa/verify` to the **Anonymous** role (a user is anonymous while the 2FA challenge is pending) and to **Member**, **Editor**, **Partner**, **Administrator**, or any custom role that uses 2FA. |
+| `/user2fa/setup` | Logged-in users | Grant `user2fa/setup` to the **Member**, **Editor**, **Partner**, **Administrator**, or any custom role that should manage 2FA. |
+
+You can assign these in the admin interface under **User accounts > Roles** or
+with SQL/CLI. Remember to clear caches after changing role assignments.
+
 ## Two-factor authentication
 
 TOTP and e-mail 2FA work without third-party credentials. Users can configure
