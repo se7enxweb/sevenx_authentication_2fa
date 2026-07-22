@@ -51,9 +51,13 @@ class eZsevenxUser2faUser extends eZUser
             return false;
         }
 
+        // Log the user in at the eZ Publish level before any 2FA redirect.
+        // The setup/verify views will then see a fully authenticated current user.
+        self::loginSucceeded( $user );
+
         if ( self::startChallenge( $user ) === true )
         {
-            return self::loginSucceeded( $user );
+            return $user;
         }
 
         return false;
@@ -72,14 +76,6 @@ class eZsevenxUser2faUser extends eZUser
         $userID = $user->attribute( 'contentobject_id' );
         $method = $helper->userMethod( $userID );
 
-        if ( $method === sevenxAuthentication2faHelper::METHOD_DISABLED )
-        {
-            sevenxAuthentication2faHelper::authLog( '2fa_not_required', 'user=' . $user->attribute( 'login' ), $userID );
-            return true;
-        }
-
-        sevenxAuthentication2faHelper::authLog( '2fa_challenge_started', 'method=' . $method, $userID );
-
         if ( $redirect === null )
         {
             $http = eZHTTPTool::instance();
@@ -92,7 +88,21 @@ class eZsevenxUser2faUser extends eZUser
             {
                 $redirect = $http->postVariable( 'RedirectURI' );
             }
+            $redirect = sevenxAuthentication2faHelper::normalizeRedirect( $redirect );
         }
+
+        if ( $method === sevenxAuthentication2faHelper::METHOD_DISABLED )
+        {
+            if ( $helper->isEnforced() )
+            {
+                sevenxAuthentication2faHelper::authLog( '2fa_enforced_setup_redirect', 'user=' . $user->attribute( 'login' ), $userID );
+                return self::redirectToSetup( $user, $redirect );
+            }
+            sevenxAuthentication2faHelper::authLog( '2fa_not_required', 'user=' . $user->attribute( 'login' ), $userID );
+            return true;
+        }
+
+        sevenxAuthentication2faHelper::authLog( '2fa_challenge_started', 'method=' . $method, $userID );
 
         if ( $method === sevenxAuthentication2faHelper::METHOD_TOTP )
         {
@@ -126,6 +136,7 @@ class eZsevenxUser2faUser extends eZUser
         // Redirect to the 2FA verification view.
         $url = 'user2fa/verify';
         eZURI::transformURI( $url );
+        eZSession::stop();
         eZHTTPTool::instance()->redirect( $url );
         eZExecution::cleanExit();
         return false;
@@ -179,15 +190,19 @@ class eZsevenxUser2faUser extends eZUser
     /**
      * Redirect the user to the 2FA setup page if TOTP is required but not configured.
      * @param eZUser $user
+     * @param string $redirect URL to go to after setup is complete
      */
-    public static function redirectToSetup( eZUser $user )
+    public static function redirectToSetup( eZUser $user, $redirect = '/' )
     {
+        $redirect = sevenxAuthentication2faHelper::normalizeRedirect( $redirect );
         $http = eZHTTPTool::instance();
         $userID = $user->attribute( 'contentobject_id' );
         $http->setSessionVariable( 'Sevenx2FA_SetupUserID', $userID );
+        $http->setSessionVariable( 'Sevenx2FA_SetupRedirect', $redirect );
         sevenxAuthentication2faHelper::authLog( '2fa_setup_redirect', 'login=' . $user->attribute( 'login' ), $userID );
         $url = 'user2fa/setup';
         eZURI::transformURI( $url );
+        eZSession::stop();
         $http->redirect( $url );
         eZExecution::cleanExit();
     }

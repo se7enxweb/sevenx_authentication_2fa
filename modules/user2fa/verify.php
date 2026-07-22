@@ -61,6 +61,8 @@ if ( $http->hasPostVariable( 'VerifyButton' ) )
         eZUser::setFailedLoginAttempts( $userID, 0 );
 
         $redirect = $pending['redirect'] ? $pending['redirect'] : '/';
+        $redirect = sevenxAuthentication2faHelper::normalizeRedirect( $redirect );
+        eZSession::stop();
         eZHTTPTool::redirect( $redirect );
         eZExecution::cleanExit();
     }

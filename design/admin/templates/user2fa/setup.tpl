@@ -15,10 +15,16 @@
                 <div class="message-feedback"><p>{$success}</p></div>
             {/if}
 
+            {if $is_enforced}
+            <div class="message-warning">
+                <p>{'Two-factor authentication is required on this site. You must choose an authentication method.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+            </div>
+            {/if}
+
             <form method="post" action={concat( 'user2fa/setup' )|ezurl( 'no' )}>
                 <label for="Method">{'Authentication method'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
                 <select id="Method" name="Method">
-                    <option value="disabled" {if eq( $data.method, 'disabled' )}selected="selected"{/if}>{'Disabled'|i18n( 'extension/sevenx_authentication_2fa' )}</option>
+                    {if not( $is_enforced )}<option value="disabled" {if eq( $data.method, 'disabled' )}selected="selected"{/if}>{'Disabled'|i18n( 'extension/sevenx_authentication_2fa' )}</option>{/if}
                     <option value="totp" {if eq( $data.method, 'totp' )}selected="selected"{/if}>{'Authenticator app (TOTP)'|i18n( 'extension/sevenx_authentication_2fa' )}</option>
                     <option value="email" {if eq( $data.method, 'email' )}selected="selected"{/if}>{'E-mail one-time code'|i18n( 'extension/sevenx_authentication_2fa' )}</option>
                 </select>
@@ -49,7 +55,7 @@
                 <input class="button" type="submit" value="{'Back'|i18n( 'extension/sevenx_authentication_2fa' )}" onclick="history.back(); return false;" />
             </div>
 
-            {if ne( $data.method, 'disabled' )}
+            {if and( ne( $data.method, 'disabled' ), not( $is_enforced ) )}
             <div style="margin-top: 3em; padding-top: 1.5em; border-top: 1px solid #ccc;">
                 <div class="message-warning">
                     <p><strong>{'Reset two-factor authentication'|i18n( 'extension/sevenx_authentication_2fa' )}</strong></p>

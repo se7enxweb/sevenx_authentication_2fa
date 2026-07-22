@@ -38,55 +38,81 @@ class sevenxAuthentication2faType extends eZDataType
 
     function validateObjectAttributeHTTPInput( $http, $base, $contentObjectAttribute )
     {
+        $error = null;
+        $data = $this->processObjectAttributeHTTPInput( $http, $base, $contentObjectAttribute, $error );
+        if ( $data === null )
+            return eZInputValidator::STATE_ACCEPTED;
+
+        $contentObjectAttribute->setAttribute( 'data_text', $data->toJson() );
+
+        if ( $error !== null )
+        {
+            $contentObjectAttribute->setValidationError( $error );
+            $contentObjectAttribute->setHasValidationError( true );
+            return eZInputValidator::STATE_INVALID;
+        }
+
         return eZInputValidator::STATE_ACCEPTED;
     }
 
     function fetchObjectAttributeHTTPInput( $http, $base, $contentObjectAttribute )
     {
+        $error = null;
+        $data = $this->processObjectAttributeHTTPInput( $http, $base, $contentObjectAttribute, $error );
+        if ( $data === null )
+            return false;
+
+        $contentObjectAttribute->setAttribute( 'data_text', $data->toJson() );
+        return true;
+    }
+
+    private function processObjectAttributeHTTPInput( $http, $base, $contentObjectAttribute, &$error )
+    {
+        $error = null;
         $variableName = $base . '_sevenxauthentication2fa_method_' . $contentObjectAttribute->attribute( 'id' );
         $secretName = $base . '_sevenxauthentication2fa_secret_' . $contentObjectAttribute->attribute( 'id' );
         $codeName = $base . '_sevenxauthentication2fa_code_' . $contentObjectAttribute->attribute( 'id' );
 
         if ( !$http->hasPostVariable( $variableName ) )
-            return false;
+            return null;
 
         $method = trim( $http->postVariable( $variableName ) );
-        $data = sevenxAuthentication2fa::fromJson( $contentObjectAttribute->attribute( 'data_text' ) );
+
+        if ( $method === 'disabled' && sevenxAuthentication2faHelper::instance()->isEnforced() )
+        {
+            $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication is required. Please choose an authentication method.' );
+            return new sevenxAuthentication2fa();
+        }
 
         if ( $method === 'totp' )
         {
             $secret = $http->hasPostVariable( $secretName ) ? trim( $http->postVariable( $secretName ) ) : '';
             if ( !$secret )
-            {
                 $secret = sevenxAuthentication2faTOTP::generateSecret();
-            }
 
-            $data->setMethod( 'totp' );
-            $data->setSecret( $secret );
-
-            // Verify the first code before marking as enabled.
-            if ( $http->hasPostVariable( $codeName ) )
+            $code = $http->hasPostVariable( $codeName ) ? trim( $http->postVariable( $codeName ) ) : '';
+            if ( $code === '' )
             {
-                $code = trim( $http->postVariable( $codeName ) );
-                if ( sevenxAuthentication2faTOTP::verify( $secret, $code ) )
-                {
-                    $data->setVerified( true );
-                }
+                $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Please enter the verification code from your authenticator app.' );
+                return new sevenxAuthentication2fa( 'totp', $secret, false );
             }
+
+            if ( !sevenxAuthentication2faTOTP::verify( $secret, $code ) )
+            {
+                $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'The verification code is incorrect.' );
+                return new sevenxAuthentication2fa( 'totp', $secret, false );
+            }
+
+            return new sevenxAuthentication2fa( 'totp', $secret, true );
         }
         elseif ( $method === 'email' )
         {
-            $data->setMethod( 'email' );
-            $data->setSecret( '' );
-            $data->setVerified( true );
+            return new sevenxAuthentication2fa( 'email', '', true );
         }
         else
         {
-            $data = new sevenxAuthentication2fa();
+            return new sevenxAuthentication2fa();
         }
-
-        $contentObjectAttribute->setAttribute( 'data_text', $data->toJson() );
-        return true;
     }
 
     function objectAttributeContent( $contentObjectAttribute )

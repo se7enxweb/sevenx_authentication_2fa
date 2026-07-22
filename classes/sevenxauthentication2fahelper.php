@@ -31,6 +31,22 @@ class sevenxAuthentication2faHelper
     const METHOD_EMAIL    = 'email';
 
     /**
+     * Normalize a redirect URI to a root-relative path.
+     * @param string $redirect
+     * @return string
+     */
+    public static function normalizeRedirect( $redirect )
+    {
+        if ( !$redirect )
+            return '/';
+
+        if ( preg_match( '#^[a-zA-Z0-9]+://#', $redirect ) || substr( $redirect, 0, 2 ) === '//' )
+            return $redirect;
+
+        return '/' . ltrim( $redirect, '/' );
+    }
+
+    /**
      * Singleton instance.
      * @var sevenxAuthentication2faHelper
      */

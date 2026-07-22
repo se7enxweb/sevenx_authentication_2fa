@@ -11,16 +11,32 @@
 
 $http = eZHTTPTool::instance();
 $currentUser = eZUser::currentUser();
+$setupUser = $currentUser;
+$isPendingSetup = false;
 
 if ( !$currentUser->isRegistered() )
 {
-    sevenxAuthentication2faHelper::authLog( '2fa_setup_unauthenticated', 'setup page requested by anonymous user' );
-    eZHTTPTool::redirect( '/user/login' );
-    eZExecution::cleanExit();
+    if ( $http->hasSessionVariable( 'Sevenx2FA_SetupUserID' ) )
+    {
+        $pendingUserID = (int) $http->sessionVariable( 'Sevenx2FA_SetupUserID' );
+        $setupUser = eZUser::fetch( $pendingUserID );
+        if ( $setupUser instanceof eZUser )
+        {
+            $isPendingSetup = true;
+            sevenxAuthentication2faHelper::authLog( '2fa_setup_pending', 'pending user id=' . $pendingUserID, $pendingUserID );
+        }
+    }
+
+    if ( !$setupUser instanceof eZUser || !$setupUser->isRegistered() )
+    {
+        sevenxAuthentication2faHelper::authLog( '2fa_setup_unauthenticated', 'setup page requested by anonymous user' );
+        eZHTTPTool::redirect( '/user/login' );
+        eZExecution::cleanExit();
+    }
 }
 
 $helper = sevenxAuthentication2faHelper::instance();
-$userID = $currentUser->attribute( 'contentobject_id' );
+$userID = $setupUser->attribute( 'contentobject_id' );
 $data = $helper->userData( $userID );
 if ( !$data )
     $data = new sevenxAuthentication2fa();
@@ -32,7 +48,11 @@ if ( $http->hasPostVariable( 'SetupButton' ) )
 {
     $method = trim( $http->postVariable( 'Method' ) );
 
-    if ( $method === 'totp' )
+    if ( $method === 'disabled' && $helper->isEnforced() )
+    {
+        $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication is required. You must choose an authentication method.' );
+    }
+    elseif ( $method === 'totp' )
     {
         $previousSecret  = $data->secret();
         $previousVerified = $data->verified();
@@ -92,9 +112,16 @@ if ( $http->hasPostVariable( 'SetupButton' ) )
 }
 elseif ( $http->hasPostVariable( 'ResetButton' ) )
 {
-    $data = new sevenxAuthentication2fa();
-    sevenxAuthentication2faHelper::authLog( '2fa_setup_reset', '2fa configuration reset by user', $userID );
-    $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication configuration has been reset.' );
+    if ( $helper->isEnforced() )
+    {
+        $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication is required. Resetting is not allowed while enforcement is enabled.' );
+    }
+    else
+    {
+        $data = new sevenxAuthentication2fa();
+        sevenxAuthentication2faHelper::authLog( '2fa_setup_reset', '2fa configuration reset by user', $userID );
+        $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication configuration has been reset.' );
+    }
 }
 else
 {
@@ -104,7 +131,7 @@ else
 // Persist back to the first sevenxauthentication2fa attribute on the user object when the form was submitted.
 if ( $http->hasPostVariable( 'SetupButton' ) || $http->hasPostVariable( 'ResetButton' ) )
 {
-    $object = $currentUser->contentObject();
+    $object = $setupUser->contentObject();
     $language = $object->attribute( 'initial_language_code' );
     if ( !$language )
         $language = 'eng-US';
@@ -117,11 +144,31 @@ if ( $http->hasPostVariable( 'SetupButton' ) || $http->hasPostVariable( 'ResetBu
             break;
         }
     }
+
+    // After a successful setup, finish the login (if this was a pending setup) and redirect.
+    if ( $http->hasPostVariable( 'SetupButton' ) && $error === '' && $data->method() !== 'disabled' )
+    {
+        if ( $isPendingSetup )
+        {
+            sevenxAuthentication2faHelper::authLog( '2fa_setup_completed_login', 'login=' . $setupUser->attribute( 'login' ), $userID );
+            eZUser::updateLastVisit( $userID, true );
+            eZUser::setCurrentlyLoggedInUser( $setupUser, $userID );
+            eZUser::setFailedLoginAttempts( $userID, 0 );
+        }
+
+        $redirect = $http->hasSessionVariable( 'Sevenx2FA_SetupRedirect' ) ? $http->sessionVariable( 'Sevenx2FA_SetupRedirect' ) : '/';
+        $redirect = sevenxAuthentication2faHelper::normalizeRedirect( $redirect );
+        $http->removeSessionVariable( 'Sevenx2FA_SetupUserID' );
+        $http->removeSessionVariable( 'Sevenx2FA_SetupRedirect' );
+        eZSession::stop();
+        eZHTTPTool::redirect( $redirect );
+        eZExecution::cleanExit();
+    }
 }
 
 $secret = $data->secret() ? $data->secret() : sevenxAuthentication2faTOTP::generateSecret();
 $issuer = $helper->issuer();
-$account = $currentUser->attribute( 'email' ) ? $currentUser->attribute( 'email' ) : $currentUser->attribute( 'login' );
+$account = $setupUser->attribute( 'email' ) ? $setupUser->attribute( 'email' ) : $setupUser->attribute( 'login' );
 $provisioningUri = sevenxAuthentication2faTOTP::provisioningUri( $account, $secret, $issuer );
 $qrCode = sevenxAuthentication2faQR::pngDataUri( $provisioningUri );
 
@@ -132,6 +179,7 @@ $tpl->setVariable( 'provisioning_uri', $provisioningUri );
 $tpl->setVariable( 'qr_code', $qrCode );
 $tpl->setVariable( 'error', $error );
 $tpl->setVariable( 'success', $success );
+$tpl->setVariable( 'is_enforced', $helper->isEnforced() );
 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:user2fa/setup.tpl' );
