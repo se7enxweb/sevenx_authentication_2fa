@@ -51,7 +51,7 @@ class eZsevenxUser2faUser extends eZUser
             return false;
         }
 
-        // Log the user in at the eZ Publish level before any 2FA redirect.
+        // Log the user in at the Exponential level before any 2FA redirect.
         // The setup/verify views will then see a fully authenticated current user.
         self::loginSucceeded( $user );
 

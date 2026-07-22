@@ -14,7 +14,9 @@ Review these before deploying the extension in production.
   the configured `Window` of time steps. The same code can be reused during that
   window; successful codes are not marked as consumed. Email codes are single-use
   because the pending challenge is removed on success, but the same code remains
-  valid until it expires if the challenge is not completed.
+  valid until it expires if the challenge is not completed. Re-logging in before
+  the code expires reuses the same pending challenge, so the same e-mail code can
+  be valid across multiple login attempts.
 
 - **TOTP and email secrets are stored in the database unencrypted.** The
   `sevenxauthentication2fa` datatype serializes the 2FA data object (including
@@ -24,7 +26,7 @@ Review these before deploying the extension in production.
 
 - **OAuth provider secrets are stored in plain-text INI files.** `ClientID` and
   `ClientSecret` are kept in `settings/override/sevenxauthentication2fa.ini.append.php`
-  like all other eZ Publish configuration. Keep these files out of version control
+  like all other Exponential configuration. Keep these files out of version control
   and restrict file-system access.
 
 - **OAuth email addresses are trusted without explicit verification checks.** The
@@ -41,7 +43,7 @@ Review these before deploying the extension in production.
 
 - **No refresh-token handling.** Once the OAuth access token expires, the
   extension does not refresh it. Social login sessions last only as long as the
-  local eZ Publish session.
+  local Exponential session.
 
 - **OAuth state is stored in the PHP session.** If the user blocks cookies or
   the session is not shared between `/user2fa/oauth/<provider>` and
@@ -144,32 +146,45 @@ Review these before deploying the extension in production.
 
 ## Operational limits
 
-- **Requires eZ Publish / Exponential 6.0.15 kernel hooks.** The extension
-  expects `eZINI` hooks for compiled-INI caching and the `kernel/content/view.php`
-  cache integration used by `sevenx_valkey_cache`. Older kernels may need manual
-  patches.
+- **Requires Exponential 6.x.** The extension is tested with PHP 8.5.8. No
+  Valkey/Redis or kernel patches are required for core 2FA functionality.
 
 - **INI changes require cache clear.** OAuth and 2FA settings are read through
   `eZINI`. After editing `settings/override/sevenxauthentication2fa.ini.append.php`,
-  clear caches or run `sevenxvalkeycacheclear.php` for the changes to take effect.
+  clear caches (`php bin/php/ezcache.php --clear-all --allow-root-user`) for the
+  changes to take effect.
 
 - **Template overrides rely on design extension ordering.** The extension uses
   `DesignExtensions[99]` in `design.ini.append.php` to ensure its templates are
   processed last. If another extension uses the same high key, overrides may not
   apply.
 
-- **Only Google is rendered in the bundled login/register templates.** The
-  supplied `login.tpl` and `register.tpl` hard-code a Google button. Adding other
-  providers requires editing the templates or building a loop over
-  `ezini('SocialProviders', ...)`.
+- **Template buttons are limited to configured providers.** The bundled
+  `login.tpl` and `register.tpl` render buttons for providers enabled in the
+  `[SocialProviders]` INI list. To add a custom provider, add it to the
+  `SocialProviders` list and ensure the provider class exists.
+
+- **Resumable e-mail link carries the code in the URL.** The verification URL
+  `/user2fa/verify/code/<code>` may appear in web server access logs. Ensure
+  log access is restricted and rotated.
+
+- **No filesystem locking on pending cache writes.** `file_put_contents()` with
+  `LOCK_EX` protects individual file writes, but concurrent re-login/resend for
+  the same user can race. High-concurrency sites should monitor the cache
+  directory for stale or duplicate files.
 
 - **`sevenx2fabuild.php` overwrites existing files.** Running the skeleton builder
   twice for the same provider name will replace the existing handler class.
 
-- **Cronjob cleanup is session-scoped.** `sevenxAuthentication2faHelper::cleanupExpiredSessions()`
-  only cleans the current PHP session. It does not remove expired challenges from
-  other active sessions or from database-backed session storage outside the
-  current request.
+- **Filesystem pending cache must be writable.** Cross-session resume and the
+  resumable e-mail link depend on `var/site/cache/sevenx_2fa_pending/` being
+  writable by the web server. If the directory cannot be created or written to,
+  re-login or a different browser will start a new 2FA challenge.
+
+- **Cronjob cleanup does not clear old Valkey keys.** The cleanup script now
+  removes expired pending challenges from the current PHP session and from the
+  filesystem cache `var/site/cache/sevenx_2fa_pending/`. It no longer relies on
+  or clears Valkey/Redis keys.
 
 - **`eZLog` path is relative to the current working directory.** When audit
   entries are written from CLI scripts, ensure the script runs from the eZ

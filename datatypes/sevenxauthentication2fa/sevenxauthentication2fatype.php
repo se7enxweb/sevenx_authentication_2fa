@@ -12,7 +12,7 @@
 /*!
   \class sevenxAuthentication2faType sevenxauthentication2fatype.php
   \ingroup sevenx_authentication_2fa
-  \brief eZ Publish datatype that stores 2FA method, TOTP secret and verification state.
+  \brief Exponential datatype that stores 2FA method, TOTP secret and verification state.
 */
 class sevenxAuthentication2faType extends eZDataType
 {

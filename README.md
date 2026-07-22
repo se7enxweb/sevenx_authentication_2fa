@@ -1,20 +1,19 @@
 # sevenx_authentication_2fa
 
-7x Two-Factor and Social Authentication extension for Exponential / eZ Publish Legacy.
+7x Two-Factor and Social Authentication extension for Exponential 6.x.
 
 Copyright (C) 1998 - 2026 7x. All rights reserved.
 Licensed under the GNU General Public License v2.0 (or any later version).
 
-- Version: 1.0.1
+- Version: 1.0.2
 - GitHub: https://github.com/se7enxweb/sevenx_authentication_2fa
 - Composer: https://packagist.org/packages/se7enxweb/sevenx_authentication_2fa
 
 ## About
 
 `sevenx_authentication_2fa` adds two-factor authentication and OAuth social-login
-handlers to Exponential / eZ Publish Legacy. It is built to work on older eZ
-Publish 4 installations with minimal dependencies, while remaining compatible
-with PHP 8.x.
+handlers to Exponential 6.x. It is built to work on Exponential 6.x
+installations with minimal dependencies, while remaining compatible with PHP 8.5.8.
 
 ## Features
 
@@ -30,12 +29,19 @@ with PHP 8.x.
 - **OAuth / social login skeletons** — ready-to-customise handlers for Google,
   Facebook, Twitter/X, Instagram and Meta, plus a base class and CLI builder for
   additional providers.
-- **Cleanup tools** — cronjob and `bin/php` script to remove expired pending
-  challenges.
+- **Resumable e-mail verification link** — the e-mail body contains a direct
+  link `/user2fa/verify/code/<code>` that resumes the login when clicked.
+- **No Valkey/Redis required** — pending 2FA challenges are stored in the
+  filesystem cache by default, so the extension works without a Valkey/Redis
+  server.
+- **Template-based e-mail body** — the OTP e-mail is rendered from an
+  overridable template so you can add newlines, branding and multiple links.
+- **Cleanup tools** — cronjob and `bin/php` script remove expired pending
+  challenges from sessions and the filesystem.
 
 ## Requirements
 
-- Exponential / eZ Publish Legacy 4.x or later (tested with PHP 5.3+ and 8.x).
+- Exponential 6.x (tested with PHP 8.5.8).
 - PHP `hash` extension (for TOTP).
 - For OAuth handlers, `curl` or `allow_url_fopen` is required for HTTP requests.
 
@@ -96,25 +102,64 @@ or override it in `settings/override/sevenxauthentication2fa.ini.append.php`.
 ### Role policies and permissions
 
 The `user2fa` module defines four policy functions: `setup`, `verify`, `oauth`,
-and `callback`. Grant them through eZ Publish **Roles and policies** (the
-`user2fa` module policies, not `PolicyOmitList`).
+and `callback`. Grant them through Exponential **Roles and policies** only.
 
 | View | Required role policies |
 |------|------------------------|
 | `/user2fa/oauth/<provider>` | Grant `user2fa/oauth` to the **Anonymous** role. |
 | `/user2fa/callback/<provider>` | Grant `user2fa/callback` to the **Anonymous** role. |
-| `/user2fa/verify` | Grant `user2fa/verify` to the **Anonymous** role (so users can complete 2FA before they are logged in) and to every role that uses 2FA, such as Member, Editor, Partner or Administrator. |
+| `/user2fa/verify` | Grant `user2fa/verify` to the **Anonymous** role and to every role that uses 2FA, such as Member, Editor, Partner or Administrator. |
+| `/user2fa/verify/code/<code>` | Same as `/user2fa/verify` — the resumable e-mail link. |
 | `/user2fa/setup` | Grant `user2fa/setup` to the **Member**, **Editor**, **Partner**, **Administrator**, or any custom user role that should manage 2FA. |
 
-The Anonymous user is still a session user while the 2FA challenge is pending,
-so `user2fa/verify` must be granted to Anonymous. The view scripts enforce their
-own state checks (`verify.php` only processes a valid pending challenge).
+The views enforce their own state checks (`verify.php` only processes a request
+when a valid pending challenge exists).
 
 Available 2FA methods:
 
 - `totp` — authenticator app
 - `email` — one-time code sent by e-mail
 - `disabled` — 2FA not used
+
+### E-mail OTP template and resumable link
+
+The e-mail OTP body is rendered from:
+
+```
+extension/sevenx_authentication_2fa/design/standard/templates/mail/2fa_code.tpl
+```
+
+Available template variables:
+
+- `{$code}` — the one-time code
+- `{$expires}` — code lifetime in minutes
+- `{$site_url}` — `eZSys::serverURL()`
+- `{$verify_url}` — resumable link such as `/user2fa/verify/code/<code>`
+
+To override the e-mail, copy that file into your site design, e.g.
+`design/sevenx_site_admin/templates/mail/2fa_code.tpl`.
+
+You can still override the body from INI by setting
+`EmailSettings.Body` in `sevenxauthentication2fa.ini`. It supports the
+placeholders `{code}`, `{expires}`, `{site_url}` and `{verify_url}`. If the
+INI body is empty or commented out, the template is used.
+
+The e-mail resumable link `/user2fa/verify/code/<code>` accepts the code as a
+module unordered parameter. Clicking it validates the code and completes login
+as long as the pending challenge is still valid.
+
+### Pending challenge storage
+
+Pending 2FA challenges are written to:
+
+```
+var/site/cache/sevenx_2fa_pending/
+```
+
+as JSON files keyed by user ID and by code hash. This allows a user to re-log
+in or open the resumable e-mail link in a different browser without requiring
+Valkey/Redis. Files are removed on successful verification and expired files
+are cleaned by the cronjob/CLI cleanup script.
 
 ### Social login
 
@@ -179,6 +224,9 @@ A `cronjobs/sevenx2facleanup.php` script is included. Register it in `cronjobs.i
 php extension/sevenx_authentication_2fa/bin/php/sevenx2facleanup.php
 ```
 
+The script removes expired pending challenge data from the current PHP session
+and from the filesystem cache `var/site/cache/sevenx_2fa_pending/`.
+
 ## Service handler APIs
 
 See `doc/2fa_service_handler_support_apis.md` for the full PHP class API,
@@ -199,3 +247,5 @@ The GNU General Public License is available at http://www.gnu.org/licenses/.
 ## Author
 
 Developed and maintained by **7x** — https://se7enx.com
+
+

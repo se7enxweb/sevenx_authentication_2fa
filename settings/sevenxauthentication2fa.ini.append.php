@@ -38,7 +38,7 @@ Subject=Your login verification code is {code}
 
 # Optional plain-text body override. If left empty or commented out, the template
 # extension/sevenx_authentication_2fa/design/standard/templates/mail/2fa_code.tpl is used.
-# Placeholders: {code}, {expires}, {site_url}.
+# Placeholders: {code}, {expires}, {site_url}, {verify_url}.
 #Body=
 
 # Sender address. If empty, the site default is used.

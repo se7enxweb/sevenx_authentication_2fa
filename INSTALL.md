@@ -32,14 +32,15 @@ php bin/php/ezcache.php --clear-all --allow-root-user
 
 The `user2fa` module exposes four policy functions: `setup`, `verify`, `oauth`,
 and `callback`. Without the correct role policies the OAuth and 2FA flows will
-return "View not found" or access-denied errors. The extension is designed to
-use eZ Publish **Roles and policies** only.
+return "View not found" or access-denied errors. Assign them through Exponential
+**roles and policies** only.
 
 | View | Who needs it | Required role policy |
 |------|--------------|----------------------|
 | `/user2fa/oauth/<provider>` | Anonymous users | Grant `user2fa/oauth` to the **Anonymous** role. |
 | `/user2fa/callback/<provider>` | Anonymous users | Grant `user2fa/callback` to the **Anonymous** role. |
-| `/user2fa/verify` | Anonymous and every role using 2FA | Grant `user2fa/verify` to the **Anonymous** role (a user is anonymous while the 2FA challenge is pending) and to **Member**, **Editor**, **Partner**, **Administrator**, or any custom role that uses 2FA. |
+| `/user2fa/verify` | Anonymous and every role using 2FA | Grant `user2fa/verify` to the **Anonymous** role and to **Member**, **Editor**, **Partner**, **Administrator**, or any custom role that uses 2FA. |
+| `/user2fa/verify/code/<code>` | Anonymous users following the e-mail link | Same as `/user2fa/verify`. |
 | `/user2fa/setup` | Logged-in users | Grant `user2fa/setup` to the **Member**, **Editor**, **Partner**, **Administrator**, or any custom role that should manage 2FA. |
 
 You can assign these in the admin interface under **User accounts > Roles** or
@@ -49,6 +50,38 @@ with SQL/CLI. Remember to clear caches after changing role assignments.
 
 TOTP and e-mail 2FA work without third-party credentials. Users can configure
 them at `/user2fa/setup` once logged in.
+
+### E-mail OTP behaviour
+
+The e-mail OTP body is rendered from:
+
+```
+extension/sevenx_authentication_2fa/design/standard/templates/mail/2fa_code.tpl
+```
+
+The default template includes:
+
+- The verification code.
+- A link to the login page.
+- A resumable link `/user2fa/verify/code/<code>` that completes the login when
+  clicked.
+- The code expiration time.
+
+To customise the e-mail, copy the file into your site design and edit it. The
+available template variables are `{$code}`, `{$expires}`, `{$site_url}` and
+`{$verify_url}`.
+
+You can still override the body from INI with `EmailSettings.Body`. Supported
+placeholders are `{code}`, `{expires}`, `{site_url}` and `{verify_url}`. If
+`Body` is empty or commented out, the template is used.
+
+If a user logs in again while an unexpired e-mail code is still pending, the
+existing code is reused and no new e-mail is sent. A new code is only sent when
+`/user2fa/verify` is accessed and the user presses the **Resend code** button.
+
+Pending 2FA challenges are stored in the filesystem cache under
+`var/site/cache/sevenx_2fa_pending/` (or the configured `FileSettings.CacheDir`).
+No Valkey/Redis server is required.
 
 ## Social login (OAuth)
 
@@ -273,7 +306,7 @@ UserInfoURL=https://provider.example.com/api/user
 
 ## Auto-create users
 
-To create local eZ Publish accounts automatically for first-time social logins,
+To create local Exponential accounts automatically for first-time social logins,
 enable it in the INI:
 
 ```ini
@@ -285,6 +318,18 @@ DefaultUserGroupNodeID=12
 When disabled, users who do not already have an account with a matching email
 will be redirected back to the login page and an `oauth_user_not_found_no_autocreate`
 entry will be written to `var/log/auth.log`.
+
+## Cleanup
+
+Expired pending 2FA challenges are removed from the current PHP session and from
+the filesystem cache `var/site/cache/sevenx_2fa_pending/` by the cleanup script.
+
+Register `extension/sevenx_authentication_2fa/cronjobs/sevenx2facleanup.php` in
+`cronjobs.ini` or run it manually:
+
+```bash
+php extension/sevenx_authentication_2fa/bin/php/sevenx2facleanup.php
+```
 
 ## Security audit logging
 

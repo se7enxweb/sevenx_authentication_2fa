@@ -446,5 +446,30 @@ class sevenxAuthentication2faHelper
                 $http->removeSessionVariable( $key );
             }
         }
+
+        self::cleanupExpiredFiles();
+    }
+
+    /**
+     * Remove expired pending challenge files from the filesystem cache.
+     */
+    public static function cleanupExpiredFiles()
+    {
+        $dir = eZDir::path( array( eZSys::cacheDirectory(), 'sevenx_2fa_pending' ) );
+        if ( !is_dir( $dir ) )
+            return;
+
+        foreach ( glob( $dir . '/*.json' ) as $file )
+        {
+            $json = @file_get_contents( $file );
+            if ( $json === false )
+                continue;
+
+            $data = json_decode( $json, true );
+            if ( !$data || !isset( $data['expires'] ) || $data['expires'] < time() )
+            {
+                @unlink( $file );
+            }
+        }
     }
 }
