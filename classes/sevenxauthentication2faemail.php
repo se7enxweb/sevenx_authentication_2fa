@@ -18,65 +18,99 @@ class sevenxAuthentication2faEmail
 {
     /**
      * Generate, store and send an email OTP to the given user.
+     * If $resend is false and a valid pending challenge already exists for the user,
+     * the existing code is reused and no new e-mail is sent.
      * @param eZUser $user
      * @param string $redirectUri
-     * @return string the generated code
+     * @param bool $resend If true, always generate and send a new code.
+     * @return string the code
      */
-    public static function sendCode( eZUser $user, $redirectUri = '' )
+    public static function sendCode( eZUser $user, $redirectUri = '', $resend = false )
     {
         $helper = sevenxAuthentication2faHelper::instance();
         $ini = $helper->ini();
 
         $length = $helper->intSetting( 'CodeSettings', 'Length', 6 );
         $ttl = $helper->intSetting( 'CodeSettings', 'EmailTTL', 600 );
+        $userID = $user->attribute( 'contentobject_id' );
 
-        $code = sevenxAuthentication2faHelper::randomCode( $length );
+        $existing = $helper->getPendingChallenge( false, $userID );
+        if ( !$resend && $existing && $existing['method'] === sevenxAuthentication2faHelper::METHOD_EMAIL && $existing['expires'] >= time() )
+        {
+            $code = $existing['code'];
+            sevenxAuthentication2faHelper::authLog( '2fa_email_code_reused', 'email=' . $user->attribute( 'email' ), $userID );
+        }
+        else
+        {
+            $code = sevenxAuthentication2faHelper::randomCode( $length );
+        }
 
         $email = $user->attribute( 'email' );
         $subjectTemplate = $ini->hasVariable( 'EmailSettings', 'Subject' ) ? $ini->variable( 'EmailSettings', 'Subject' ) : 'Your login verification code is {code}';
-        $bodyTemplate = $ini->hasVariable( 'EmailSettings', 'Body' ) ? $ini->variable( 'EmailSettings', 'Body' ) : 'Your code is {code}.';
-
         $subject = str_replace( '{code}', $code, $subjectTemplate );
-        $body = str_replace( array( '{code}', '{expires}' ), array( $code, (int)( $ttl / 60 ) ), $bodyTemplate );
 
-        $mail = new eZMail();
-        $mail->setReceiver( $email );
+        $siteUrl = eZSys::serverURL() . eZSys::indexDir();
 
-        $sender = $ini->variable( 'EmailSettings', 'Sender' );
-        if ( $sender && eZMail::validate( $sender ) )
-            $mail->setSender( $sender );
-        else
-            $mail->setSenderText( eZINI::instance()->variable( 'MailSettings', 'AdminEmail' ) );
+        $verifyPath = 'user2fa/verify/code/' . urlencode( $code );
+        eZURI::transformURI( $verifyPath, false, null, false );
+        $verifyUrl = eZSys::serverURL() . $verifyPath;
 
-        $mail->setSubject( $subject );
-        $mail->setBody( $body );
-        $mail->setContentType( 'text/plain' );
+        // Render the e-mail body from an overridable template so it can contain newlines and formatting.
+        $tpl = eZTemplate::factory();
+        $tpl->setVariable( 'code', $code );
+        $tpl->setVariable( 'expires', (int)( $ttl / 60 ) );
+        $tpl->setVariable( 'site_url', $siteUrl );
+        $tpl->setVariable( 'verify_url', $verifyUrl );
+        $body = $tpl->fetch( 'design:mail/2fa_code.tpl' );
 
-        $result = eZMailTransport::send( $mail );
+        if ( $ini->hasVariable( 'EmailSettings', 'Body' ) && trim( $ini->variable( 'EmailSettings', 'Body' ) ) !== '' )
+        {
+            $bodyTemplate = $ini->variable( 'EmailSettings', 'Body' );
+            $body = str_replace( array( '{code}', '{expires}', '{site_url}', '{verify_url}' ), array( $code, (int)( $ttl / 60 ), $siteUrl, $verifyUrl ), $bodyTemplate );
+        }
 
-        $helper->setPendingChallenge( $user->attribute( 'contentobject_id' ), sevenxAuthentication2faHelper::METHOD_EMAIL, $code, $ttl, $redirectUri );
+        $sent = 'no';
+        if ( $resend || !$existing || $existing['code'] !== $code )
+        {
+            $mail = new eZMail();
+            $mail->setReceiver( $email );
 
-        sevenxAuthentication2faHelper::authLog( '2fa_email_code_sent', 'email=' . $email . ' sent=' . ( $result ? 'yes' : 'no' ), $user->attribute( 'contentobject_id' ) );
+            $sender = $ini->variable( 'EmailSettings', 'Sender' );
+            if ( $sender && eZMail::validate( $sender ) )
+                $mail->setSender( $sender );
+            else
+                $mail->setSenderText( eZINI::instance()->variable( 'MailSettings', 'AdminEmail' ) );
+
+            $mail->setSubject( $subject );
+            $mail->setBody( $body );
+            $mail->setContentType( 'text/plain' );
+
+            $sent = eZMailTransport::send( $mail ) ? 'yes' : 'no';
+        }
+
+        $helper->setPendingChallenge( $userID, sevenxAuthentication2faHelper::METHOD_EMAIL, $code, $ttl, $redirectUri );
+
+        sevenxAuthentication2faHelper::authLog( '2fa_email_code_sent', 'email=' . $email . ' sent=' . $sent, $userID );
 
         return $code;
     }
 
     /**
-     * Verify an email OTP against the session pending challenge.
+     * Verify an email OTP against the pending challenge.
      * @param string $code
      * @return bool
      */
     public static function verifyCode( $code )
     {
         $helper = sevenxAuthentication2faHelper::instance();
-        $pending = $helper->getPendingChallenge();
+        $code = preg_replace( '/[^0-9]/', '', $code );
+        $pending = $helper->getPendingChallenge( $code );
         if ( !$pending )
             return false;
 
         if ( time() > $pending['expires'] )
             return false;
 
-        $code = preg_replace( '/[^0-9]/', '', $code );
         if ( !function_exists( 'hash_equals' ) )
         {
             if ( strlen( $pending['code'] ) !== strlen( $code ) )

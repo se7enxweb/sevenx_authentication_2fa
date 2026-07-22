@@ -19,7 +19,7 @@ $ViewList['verify'] = array(
     'script' => 'verify.php',
     'params' => array(),
     'ui_context' => 'authentication',
-    'unordered_params' => array()
+    'unordered_params' => array( 'code' => 'Code' )
 );
 
 $ViewList['setup'] = array(

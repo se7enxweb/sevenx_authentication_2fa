@@ -36,12 +36,10 @@ Algorithm=SHA1
 # Subject of the OTP email. {code} is replaced with the actual code.
 Subject=Your login verification code is {code}
 
-# Plain-text body. {code} and {expires} are replaced.
-Body=Enter the following code to complete your login:
-
-{code}
-
-This code expires in {expires} minutes.
+# Optional plain-text body override. If left empty or commented out, the template
+# extension/sevenx_authentication_2fa/design/standard/templates/mail/2fa_code.tpl is used.
+# Placeholders: {code}, {expires}, {site_url}.
+#Body=
 
 # Sender address. If empty, the site default is used.
 Sender=

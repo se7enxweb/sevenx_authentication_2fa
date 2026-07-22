@@ -11,7 +11,14 @@
 
 $http = eZHTTPTool::instance();
 $helper = sevenxAuthentication2faHelper::instance();
-$pending = $helper->getPendingChallenge();
+
+$urlCode = '';
+if ( isset( $Code ) && $Code !== '' )
+    $urlCode = trim( $Code );
+elseif ( $http->hasGetVariable( 'Code' ) )
+    $urlCode = trim( $http->getVariable( 'Code' ) );
+
+$pending = $helper->getPendingChallenge( $urlCode );
 
 $error = '';
 $status = 'verify';
@@ -36,18 +43,27 @@ if ( !$user )
 $userID = $user->attribute( 'contentobject_id' );
 sevenxAuthentication2faHelper::authLog( '2fa_verify_view', 'method=' . $pending['method'], $userID );
 
+$submittedCode = '';
 if ( $http->hasPostVariable( 'VerifyButton' ) )
 {
-    $code = trim( $http->postVariable( 'Code' ) );
+    $submittedCode = trim( $http->postVariable( 'Code' ) );
+}
+elseif ( $urlCode !== '' )
+{
+    $submittedCode = $urlCode;
+}
+
+if ( $submittedCode !== '' )
+{
     $valid = false;
 
     if ( $pending['method'] === sevenxAuthentication2faHelper::METHOD_TOTP )
     {
-        $valid = sevenxAuthentication2faTOTP::verify( $pending['code'], $code );
+        $valid = sevenxAuthentication2faTOTP::verify( $pending['code'], $submittedCode );
     }
     elseif ( $pending['method'] === sevenxAuthentication2faHelper::METHOD_EMAIL )
     {
-        $valid = sevenxAuthentication2faEmail::verifyCode( $code );
+        $valid = sevenxAuthentication2faEmail::verifyCode( $submittedCode );
     }
 
     if ( $valid )
@@ -77,7 +93,7 @@ if ( $http->hasPostVariable( 'VerifyButton' ) )
 if ( $http->hasPostVariable( 'ResendButton' ) && $pending['method'] === sevenxAuthentication2faHelper::METHOD_EMAIL )
 {
     sevenxAuthentication2faHelper::authLog( '2fa_email_resend', 'resending email code', $userID );
-    sevenxAuthentication2faEmail::sendCode( $user, $pending['redirect'] );
+    sevenxAuthentication2faEmail::sendCode( $user, $pending['redirect'], true );
     $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'A new code has been sent to your e-mail address.' );
 }
 

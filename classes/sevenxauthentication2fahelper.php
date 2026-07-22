@@ -222,7 +222,7 @@ class sevenxAuthentication2faHelper
     }
 
     /**
-     * Store a pending 2FA challenge in the current session.
+     * Store a pending 2FA challenge in the current session and the filesystem.
      * @param int $userID
      * @param string $method
      * @param string $codeOrSecret for email this is the expected code, for TOTP this is the secret
@@ -232,33 +232,157 @@ class sevenxAuthentication2faHelper
     public function setPendingChallenge( $userID, $method, $codeOrSecret, $ttl, $redirect = '' )
     {
         $http = eZHTTPTool::instance();
+        $expires = time() + $ttl;
         $http->setSessionVariable( self::SESSION_PENDING_USER_ID, $userID );
         $http->setSessionVariable( self::SESSION_PENDING_METHOD, $method );
-        if ( $method === self::METHOD_TOTP )
-            $http->setSessionVariable( self::SESSION_PENDING_CODE, $codeOrSecret );
-        else
-            $http->setSessionVariable( self::SESSION_PENDING_CODE, $codeOrSecret );
-        $http->setSessionVariable( self::SESSION_PENDING_EXPIRES, time() + $ttl );
+        $http->setSessionVariable( self::SESSION_PENDING_CODE, $codeOrSecret );
+        $http->setSessionVariable( self::SESSION_PENDING_EXPIRES, $expires );
         $http->setSessionVariable( self::SESSION_PENDING_REDIRECT, $redirect );
+
+        $data = array(
+            'user_id'  => $userID,
+            'method'   => $method,
+            'code'     => $codeOrSecret,
+            'expires'  => $expires,
+            'redirect' => $redirect,
+        );
+        $this->setFilePending( $userID, $codeOrSecret, $data, $ttl );
     }
 
     /**
-     * Read pending challenge data from the current session.
+     * Read pending challenge data from the current session, falling back to the filesystem.
+     * @param string|false $code Optional code to look up across sessions.
+     * @param int|false $userID Optional user ID to look up across sessions.
      * @return array|null
      */
-    public function getPendingChallenge()
+    public function getPendingChallenge( $code = false, $userID = false )
     {
         $http = eZHTTPTool::instance();
-        if ( !$http->hasSessionVariable( self::SESSION_PENDING_USER_ID ) )
-            return null;
+        if ( $http->hasSessionVariable( self::SESSION_PENDING_USER_ID ) )
+        {
+            $pending = array(
+                'user_id'  => $http->sessionVariable( self::SESSION_PENDING_USER_ID ),
+                'method'   => $http->sessionVariable( self::SESSION_PENDING_METHOD ),
+                'code'     => $http->sessionVariable( self::SESSION_PENDING_CODE ),
+                'expires'  => $http->sessionVariable( self::SESSION_PENDING_EXPIRES ),
+                'redirect' => $http->sessionVariable( self::SESSION_PENDING_REDIRECT ),
+            );
+            if ( $pending['expires'] >= time() )
+                return $pending;
+        }
 
-        return array(
-            'user_id'  => $http->sessionVariable( self::SESSION_PENDING_USER_ID ),
-            'method'   => $http->sessionVariable( self::SESSION_PENDING_METHOD ),
-            'code'     => $http->sessionVariable( self::SESSION_PENDING_CODE ),
-            'expires'  => $http->sessionVariable( self::SESSION_PENDING_EXPIRES ),
-            'redirect' => $http->sessionVariable( self::SESSION_PENDING_REDIRECT ),
-        );
+        if ( $code !== false && $code !== '' )
+        {
+            $pending = $this->getFilePendingByCode( $code );
+            if ( $pending )
+                return $pending;
+        }
+
+        if ( $userID !== false && $userID > 0 )
+        {
+            $pending = $this->getFilePendingByUser( $userID );
+            if ( $pending )
+                return $pending;
+        }
+
+        return null;
+    }
+
+    /**
+     * Directory for file-based pending challenge storage (no Valkey/Redis required).
+     */
+    private function pendingFileDir()
+    {
+        $dir = eZDir::path( array( eZSys::cacheDirectory(), 'sevenx_2fa_pending' ) );
+        if ( !file_exists( $dir ) )
+        {
+            eZDir::mkdir( $dir, 0777, true );
+        }
+        return $dir;
+    }
+
+    /**
+     * Store pending challenge data in the filesystem.
+     */
+    private function setFilePending( $userID, $code, $data, $ttl )
+    {
+        $dir = $this->pendingFileDir();
+        $json = json_encode( $data );
+        $userFile = $dir . '/user_' . (int)$userID . '.json';
+        $codeFile = $dir . '/code_' . md5( (string)$code ) . '.json';
+        @file_put_contents( $userFile, $json, LOCK_EX );
+        @file_put_contents( $codeFile, $json, LOCK_EX );
+    }
+
+    /**
+     * Read a pending challenge JSON file, removing it if expired.
+     */
+    private function readFilePending( $file )
+    {
+        if ( !file_exists( $file ) )
+            return false;
+
+        $json = @file_get_contents( $file );
+        if ( $json === false )
+            return false;
+
+        $data = json_decode( $json, true );
+        if ( !$data || !isset( $data['expires'] ) || $data['expires'] < time() )
+        {
+            @unlink( $file );
+            return false;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Fetch pending challenge from filesystem by user ID.
+     */
+    private function getFilePendingByUser( $userID )
+    {
+        $file = $this->pendingFileDir() . '/user_' . (int)$userID . '.json';
+        return $this->readFilePending( $file );
+    }
+
+    /**
+     * Fetch pending challenge from filesystem by code.
+     */
+    private function getFilePendingByCode( $code )
+    {
+        $file = $this->pendingFileDir() . '/code_' . md5( (string)$code ) . '.json';
+        return $this->readFilePending( $file );
+    }
+
+    /**
+     * Remove pending challenge files.
+     */
+    private function removeFilePending( $userID, $code )
+    {
+        $dir = $this->pendingFileDir();
+        $userFile = $dir . '/user_' . (int)$userID . '.json';
+        $codeFile = $dir . '/code_' . md5( (string)$code ) . '.json';
+        if ( file_exists( $userFile ) )
+            @unlink( $userFile );
+        if ( file_exists( $codeFile ) )
+            @unlink( $codeFile );
+    }
+
+    /**
+     * Remove a pending challenge from the session and filesystem.
+     */
+    public function removePendingChallenge()
+    {
+        $http = eZHTTPTool::instance();
+        $userID = $http->hasSessionVariable( self::SESSION_PENDING_USER_ID ) ? $http->sessionVariable( self::SESSION_PENDING_USER_ID ) : 0;
+        $code = $http->hasSessionVariable( self::SESSION_PENDING_CODE ) ? $http->sessionVariable( self::SESSION_PENDING_CODE ) : '';
+        $http->removeSessionVariable( self::SESSION_PENDING_USER_ID );
+        $http->removeSessionVariable( self::SESSION_PENDING_METHOD );
+        $http->removeSessionVariable( self::SESSION_PENDING_CODE );
+        $http->removeSessionVariable( self::SESSION_PENDING_EXPIRES );
+        $http->removeSessionVariable( self::SESSION_PENDING_REDIRECT );
+
+        $this->removeFilePending( $userID, $code );
     }
 
     /**
@@ -307,26 +431,6 @@ class sevenxAuthentication2faHelper
 
         eZLog::write( $message, 'auth.log', 'var/log' );
         eZDebug::writeNotice( $message, 'sevenx_authentication_2fa:auth' );
-    }
-
-    /**
-     * Remove the pending challenge from the current session.
-     */
-    public function removePendingChallenge()
-    {
-        $http = eZHTTPTool::instance();
-        $vars = array(
-            self::SESSION_PENDING_USER_ID,
-            self::SESSION_PENDING_METHOD,
-            self::SESSION_PENDING_CODE,
-            self::SESSION_PENDING_EXPIRES,
-            self::SESSION_PENDING_REDIRECT,
-        );
-        foreach ( $vars as $var )
-        {
-            if ( $http->hasSessionVariable( $var ) )
-                $http->removeSessionVariable( $var );
-        }
     }
 
     /**
