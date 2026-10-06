@@ -20,7 +20,7 @@
   <p class="box">{$userAccount.contentobject.name|wash}</p>
 </div>
 
-<p><a href={"/user2fa/setup"|ezurl}>{'Two-Factor Authentication'|i18n( 'extension/sevenx_authentication_2fa' )}</a></p>
+{include uri='design:user2fa/parts/account_link.tpl' style='box'}
 
 <div class="buttonblock">
 <input class="text" type="hidden" name="ContentObjectLanguageCode" value="{$userAccount.contentobject.initial_language_code}" />

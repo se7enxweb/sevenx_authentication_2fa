@@ -57,16 +57,9 @@
 {* /if *}
 </div>
 
-{def $social_login_enabled = ezini( 'SocialLogin', 'Enabled', 'sevenxauthentication2fa.ini' )|eq( 'enabled' )
-     $google_enabled = ezini( 'Google', 'Enabled', 'sevenxauthentication2fa.ini' )|eq( 'enabled' )
-     $idme_enabled = ezini( 'Idme', 'Enabled', 'sevenxauthentication2fa.ini' )|eq( 'enabled' )}
-{if and( $social_login_enabled, or( $google_enabled, $idme_enabled ) )}
-<div class="block">
-    <p>{'Or sign in with'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
-    {if $google_enabled}<a href={'/user2fa/oauth/google'|ezurl} class="button">{'Google'|i18n( 'extension/sevenx_authentication_2fa' )}</a>{/if}
-    {if $idme_enabled}<a href={'/user2fa/oauth/idme'|ezurl} class="button">{'ID.me'|i18n( 'extension/sevenx_authentication_2fa' )}</a>{/if}
-</div>
-{/if}
+{* The social login buttons of sevenx_authentication_2fa, for the providers its settings enable *}
+{include uri='design:user2fa/exp_style.tpl'}
+{include uri='design:user2fa/parts/social_buttons.tpl' context='login' redirect=$User:redirect_uri}
 
 {if ezini( 'SiteSettings', 'LoginPage' )|eq( 'custom' )}
     <p><a href={'/user/forgotpassword'|ezurl}>{'Forgot your password?'|i18n( 'design/ezwebin/user/login' )}</a></p>
