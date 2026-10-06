@@ -30,21 +30,37 @@ php bin/php/ezcache.php --clear-all --allow-root-user
 
 4. Configure role policies.
 
-The `user2fa` module exposes four policy functions: `setup`, `verify`, `oauth`,
-and `callback`. Without the correct role policies the OAuth and 2FA flows will
-return "View not found" or access-denied errors. Assign them through Exponential
-**roles and policies** only.
+Only one policy is needed: grant **`user2fa/setup`** to every role whose users
+may manage their own second step (Member, Editor, Administrator ...).
 
-| View | Who needs it | Required role policy |
-|------|--------------|----------------------|
-| `/user2fa/oauth/<provider>` | Anonymous users | Grant `user2fa/oauth` to the **Anonymous** role. |
-| `/user2fa/callback/<provider>` | Anonymous users | Grant `user2fa/callback` to the **Anonymous** role. |
-| `/user2fa/verify` | Anonymous and every role using 2FA | Grant `user2fa/verify` to the **Anonymous** role and to **Member**, **Editor**, **Partner**, **Administrator**, or any custom role that uses 2FA. |
-| `/user2fa/verify/code/<code>` | Anonymous users following the e-mail link | Same as `/user2fa/verify`. |
-| `/user2fa/setup` | Logged-in users | Grant `user2fa/setup` to the **Member**, **Editor**, **Partner**, **Administrator**, or any custom role that should manage 2FA. |
+The steps before signing in (`user2fa/verify`, `user2fa/oauth`,
+`user2fa/callback`, and `user2fa/setup` while `Enforce2FA` asks for a first
+setup) are reached by the anonymous user, who may not use an administration
+siteaccess at all. The extension's `site.ini` therefore lists them in
+`[RoleSettings] PolicyOmitList` and `[SiteAccessSettings] AnonymousAccessList`;
+each view checks its own session state. Anonymous policies for `user2fa/*`,
+which older versions asked for, are no longer needed.
 
-You can assign these in the admin interface under **User accounts > Roles** or
-with SQL/CLI. Remember to clear caches after changing role assignments.
+5. Optional, recommended: a key that encrypts TOTP secrets where they are
+   stored, in `settings/override/sevenxauthentication2fa.ini.append.php`:
+
+```ini
+[TOTPSettings]
+# openssl rand -base64 48
+SecretKey=<a long random value>
+```
+
+   Keep it out of version control. Changing or losing it makes every stored
+   secret unreadable: those users set up their authenticator again.
+
+6. Look at `[Security]` in `sevenxauthentication2fa.ini` (wrong codes per
+   sign-in, how long a second step stays open, e-mail resends).
+
+To try it on one siteaccess first, activate the extension as an access
+extension of that siteaccess and set the `LoginHandler` lines there instead of
+in `settings/override`. Note that `settings/override` outranks a siteaccess:
+a `[MailSettings] Transport` or `LoginHandler` set there cannot be changed per
+siteaccess.
 
 ## Two-factor authentication
 
@@ -75,13 +91,13 @@ You can still override the body from INI with `EmailSettings.Body`. Supported
 placeholders are `{code}`, `{expires}`, `{site_url}` and `{verify_url}`. If
 `Body` is empty or commented out, the template is used.
 
-If a user logs in again while an unexpired e-mail code is still pending, the
-existing code is reused and no new e-mail is sent. A new code is only sent when
-`/user2fa/verify` is accessed and the user presses the **Resend code** button.
+Every sign-in sends a new code; codes sent before stop working. **Send a new
+code** on the verify page works after `[Security] ResendInterval` seconds, at
+most `MaxResends` times per sign-in. The resumable link works in the browser
+where the password was entered only.
 
-Pending 2FA challenges are stored in the filesystem cache under
-`var/site/cache/sevenx_2fa_pending/` (or the configured `FileSettings.CacheDir`).
-No Valkey/Redis server is required.
+A pending second step is kept in the visitor's session only, with the e-mail
+code as a salted hash. No Valkey/Redis server and no file storage is used.
 
 ## Social login (OAuth)
 
@@ -316,13 +332,15 @@ DefaultUserGroupNodeID=12
 ```
 
 When disabled, users who do not already have an account with a matching email
-will be redirected back to the login page and an `oauth_user_not_found_no_autocreate`
+see a page that says no account matches (with the way back to the login form) and an `oauth_user_not_found_no_autocreate`
 entry will be written to `var/log/auth.log`.
 
 ## Cleanup
 
-Expired pending 2FA challenges are removed from the current PHP session and from
-the filesystem cache `var/site/cache/sevenx_2fa_pending/` by the cleanup script.
+Pending second steps live in sessions and end with them. The cleanup script
+deletes the files that versions up to 1.0.2 wrote to
+`var/<site>/cache/sevenx_2fa_pending/` (they held codes and TOTP secrets in
+plain text); run it once after upgrading.
 
 Register `extension/sevenx_authentication_2fa/cronjobs/sevenx2facleanup.php` in
 `cronjobs.ini` or run it manually:

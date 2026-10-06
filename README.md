@@ -30,10 +30,18 @@ installations with minimal dependencies, while remaining compatible with PHP 8.5
   Facebook, Twitter/X, Instagram and Meta, plus a base class and CLI builder for
   additional providers.
 - **Resumable e-mail verification link** — the e-mail body contains a direct
-  link `/user2fa/verify/code/<code>` that resumes the login when clicked.
-- **No Valkey/Redis required** — pending 2FA challenges are stored in the
-  filesystem cache by default, so the extension works without a Valkey/Redis
-  server.
+  link `/user2fa/verify/code/<code>` that finishes the login when it is opened
+  in the browser where the password was entered.
+- **No Valkey/Redis required** — a pending second step lives in the visitor's
+  own session only; nothing of it is written to the file system.
+- **Hardened second step** — the password alone never signs in; TOTP codes are
+  accepted once (replay refused) within a configurable window; wrong codes are
+  limited per sign-in and count as failed logins of the account; e-mail codes
+  are kept hashed; TOTP secrets can be encrypted at rest; every redirect target
+  passes the safe redirect rules. See [Security](#security).
+- **On-model pages** — the second step, setup, social login answers and the
+  2FA field are drawn in the look of the admin (admin4 light and dark, admin,
+  Admin UI) and of the media site design. See `doc/two-factor-pages.md`.
 - **Template-based e-mail body** — the OTP e-mail is rendered from an
   overridable template so you can add newlines, branding and multiple links.
 - **Cleanup tools** — cronjob and `bin/php` script remove expired pending
@@ -104,16 +112,21 @@ or override it in `settings/override/sevenxauthentication2fa.ini.append.php`.
 The `user2fa` module defines four policy functions: `setup`, `verify`, `oauth`,
 and `callback`. Grant them through Exponential **Roles and policies** only.
 
-| View | Required role policies |
-|------|------------------------|
-| `/user2fa/oauth/<provider>` | Grant `user2fa/oauth` to the **Anonymous** role. |
-| `/user2fa/callback/<provider>` | Grant `user2fa/callback` to the **Anonymous** role. |
-| `/user2fa/verify` | Grant `user2fa/verify` to the **Anonymous** role and to every role that uses 2FA, such as Member, Editor, Partner or Administrator. |
-| `/user2fa/verify/code/<code>` | Same as `/user2fa/verify` — the resumable e-mail link. |
-| `/user2fa/setup` | Grant `user2fa/setup` to the **Member**, **Editor**, **Partner**, **Administrator**, or any custom user role that should manage 2FA. |
+`verify`, `oauth`, `callback` and `setup` happen before the user is signed in,
+when the visitor is the anonymous user. In an administration siteaccess the
+anonymous user may not use the siteaccess at all, so no policy could let the
+second step through there. The extension therefore lists the four views in
+`[RoleSettings] PolicyOmitList` (as the kernel does for `user/login`) and in
+`[SiteAccessSettings] AnonymousAccessList`, and each view checks its own state:
 
-The views enforce their own state checks (`verify.php` only processes a request
-when a valid pending challenge exists).
+| View | Who gets through |
+|------|------------------|
+| `/user2fa/verify` (and `/user2fa/verify/code/<code>`) | Only a session that has just passed the password. |
+| `/user2fa/oauth/<provider>` | Anyone, when social login and the provider are enabled. |
+| `/user2fa/callback/<provider>` | Only the answer to a login this session started (state check). |
+| `/user2fa/setup` | A signed in user with the policy **`user2fa/setup`** (grant it to Member, Editor, Administrator ...), or a session that passed the password while `Enforce2FA` asks for a method first. |
+
+Policies for the anonymous role are no longer needed, and do no harm.
 
 Available 2FA methods:
 
@@ -145,21 +158,21 @@ placeholders `{code}`, `{expires}`, `{site_url}` and `{verify_url}`. If the
 INI body is empty or commented out, the template is used.
 
 The e-mail resumable link `/user2fa/verify/code/<code>` accepts the code as a
-module unordered parameter. Clicking it validates the code and completes login
-as long as the pending challenge is still valid.
+module unordered parameter. Opened in the browser where the password was
+entered, it validates the code and completes the login while the challenge is
+open; opened anywhere else it says so and signs nothing in (a link that worked
+in any browser would let whoever sees the mail sign in without the password
+step).
 
 ### Pending challenge storage
 
-Pending 2FA challenges are written to:
-
-```
-var/site/cache/sevenx_2fa_pending/
-```
-
-as JSON files keyed by user ID and by code hash. This allows a user to re-log
-in or open the resumable e-mail link in a different browser without requiring
-Valkey/Redis. Files are removed on successful verification and expired files
-are cleaned by the cronjob/CLI cleanup script.
+A pending second step is kept in the visitor's session only
+(`Sevenx2FA_Pending`): the user who passed the password, the method, when it
+ends, where to go afterwards, the wrong codes so far and, for an e-mail code,
+its salted hash. Versions up to 1.0.2 also wrote JSON files to
+`var/<site>/cache/sevenx_2fa_pending/`, keyed by user and by the code, holding
+the code or the TOTP secret in plain text and looked up across sessions; the
+cleanup cronjob and `bin/php/sevenx2facleanup.php` now delete every such file.
 
 ### Social login
 
@@ -182,20 +195,28 @@ See `doc/idme.md` for ID.me-specific setup details.
 ### User 2FA setup
 
 After installation, users can visit `/user2fa/setup` to enable TOTP or e-mail
-authentication. The setup page displays the TOTP secret and a QR code image
-generated via Google Chart API. If you prefer not to use an external service, the
-`otpauth://` URI and the plain text secret are also shown.
+authentication. While an authenticator is being set up the page shows a QR
+code, drawn on the server into a `data:` URI (no external QR service sees the
+secret), and the key in groups of four. The key is made on the server and kept
+in the session until a code from the app confirms it; once confirmed it is
+never shown again. Moving away from a confirmed authenticator (to e-mail codes,
+off, or a reset) needs a current code from it.
 
 ### Login and register pages
 
-The extension provides template overrides for `user/login.tpl` and
-`user/register.tpl` that add Google and ID.me sign-in buttons. Buttons are shown
-when `SocialLogin` and the matching provider are enabled.
+The social login buttons come from one partial,
+`design:user2fa/parts/social_buttons.tpl`, with a button for every provider
+that `SocialLogin` and the provider's own `Enabled` switch on. The extension's
+overrides of `user/login.tpl` (admin, simple) and `user/register.tpl` (simple,
+standard) include it; the admin4 and Admin UI login pages and the media
+design's login and registration pages include it themselves when the module
+exists (`{if ezmodule( 'user2fa/oauth' )}`).
 
 ### User edit page
 
-A "Two-Factor Authentication" link is added to the `user/edit` view templates so
-users can manage 2FA from their profile.
+`design:user2fa/parts/account_link.tpl` shows the state of the second step with
+a link to `/user2fa/setup` (a box, or a list item for a design's own list of
+account links, as the media design's profile uses it).
 
 ### Adding a new OAuth provider
 
@@ -226,6 +247,51 @@ php extension/sevenx_authentication_2fa/bin/php/sevenx2facleanup.php
 
 The script removes expired pending challenge data from the current PHP session
 and from the filesystem cache `var/site/cache/sevenx_2fa_pending/`.
+
+## Security
+
+- **The password alone never signs in.** The login handler checks the
+  password and the siteaccess, then keeps only "this user passed the password"
+  in the session; the user is signed in (with a new session id) after the right
+  code. Up to 1.0.2 the user was signed in before the second step, so leaving
+  the code page was enough.
+- **Codes**: a TOTP code is accepted within `[CodeSettings] Window` steps (0 to
+  3, default 1) and only once: the step that signed in is stored and that step
+  and older ones are refused. `[Security] MaxAttempts` (default 5) wrong codes
+  end the sign-in, and every wrong code counts as a failed login of the account
+  (`site.ini [UserSettings] MaxNumberOfFailedLogin`). E-mail codes are kept as a
+  salted HMAC; a new one can be asked for after `ResendInterval` seconds, at
+  most `MaxResends` times.
+- **Secrets at rest**: set `[TOTPSettings] SecretKey` (or the environment
+  variable `SEVENX_2FA_SECRET_KEY`) in `settings/override` to store TOTP
+  secrets AES-256-GCM encrypted in the user object. Without a key they are
+  stored as before. Secrets are 160 bits from `random_bytes()`.
+- **Social login**: the state is 256 random bits, bound to the provider and
+  to ten minutes, used once and compared in constant time; PKCE where
+  configured; an address the provider marks `email_verified: false` is not
+  used to find an account; endpoints must be https and redirects are not
+  followed when the token is fetched; an account found this way still has its
+  own second step.
+- **Redirects**: every target from outside the code (the login form's
+  `RedirectURI`, `RedirectAfterLogin`, the social login's `RedirectURI`) passes
+  `eZRedirectManager::unsafeReason()` (Exponential 6.0.15,
+  `doc/features/6.0/safe-redirects.md`), or the same rules built in on older
+  kernels, and is reduced to a path of the site.
+- **Pages** with a secret, a QR code or a pending sign-in are sent with
+  `Cache-Control: no-store`; forms are posted with the form token of
+  `ezformtoken`.
+
+## Tests
+
+The logic that needs no database has PHPUnit tests (RFC 6238 vectors, the time
+window, replay, attempt and resend limits, e-mail code hashing, the redirect
+rules, secret encryption):
+
+```bash
+php vendor/bin/phpunit --no-configuration \
+    --bootstrap extension/sevenx_authentication_2fa/tests/bootstrap.php \
+    extension/sevenx_authentication_2fa/tests/unit
+```
 
 ## Service handler APIs
 
