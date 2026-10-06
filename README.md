@@ -206,17 +206,23 @@ off, or a reset) needs a current code from it.
 
 The social login buttons come from one partial,
 `design:user2fa/parts/social_buttons.tpl`, with a button for every provider
-that `SocialLogin` and the provider's own `Enabled` switch on. The extension's
-overrides of `user/login.tpl` (admin, simple) and `user/register.tpl` (simple,
-standard) include it; the admin4 and Admin UI login pages and the media
-design's login and registration pages include it themselves when the module
-exists (`{if ezmodule( 'user2fa/oauth' )}`).
+that `SocialLogin` and the provider's own `Enabled` switch on. The pages that
+show it include it themselves when the module exists
+(`{if ezmodule( 'user2fa/oauth' )}`): the login pages of Exponential 6.0.15
+(admin, admin4) and of the Admin UI, the kernel's `user/register.tpl`, and the
+media design's login and registration pages.
+
+The extension no longer ships copies of `user/login.tpl`, `user/register.tpl`
+and `user/edit.tpl`: active, those copies hid the kernel's newer templates (the
+Cancel button, the e-mail preference and API key links). A design of your own
+adds the include lines shown in `doc/two-factor-pages.md`.
 
 ### User edit page
 
 `design:user2fa/parts/account_link.tpl` shows the state of the second step with
 a link to `/user2fa/setup` (a box, or a list item for a design's own list of
-account links, as the media design's profile uses it).
+account links, as the media design's profile uses it). The kernel's
+`user/edit.tpl` includes it; admin4's account page has a card of its own for it.
 
 ### Adding a new OAuth provider
 
