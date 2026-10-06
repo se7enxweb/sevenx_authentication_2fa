@@ -13,6 +13,11 @@
   \class sevenxAuthentication2fa sevenxauthentication2fa.php
   \ingroup sevenx_authentication_2fa
   \brief Value object stored in the sevenxauthentication2fa datatype.
+
+  Stored as JSON in the attribute's data_text:
+  method, secret (encrypted when a key is configured, see
+  sevenxAuthentication2faCrypto), verified, created_at, and last_step: the
+  last TOTP time step that signed in, so its code cannot be used again.
 */
 class sevenxAuthentication2fa
 {
@@ -22,7 +27,7 @@ class sevenxAuthentication2fa
     private $method;
 
     /**
-     * @var string
+     * @var string the plain Base32 secret
      */
     private $secret;
 
@@ -36,16 +41,24 @@ class sevenxAuthentication2fa
      */
     private $createdAt;
 
-    public function __construct( $method = 'disabled', $secret = '', $verified = false, $createdAt = null )
+    /**
+     * @var int|null
+     */
+    private $lastStep;
+
+    public function __construct( $method = 'disabled', $secret = '', $verified = false, $createdAt = null, $lastStep = null )
     {
-        $this->method = $method;
-        $this->secret = $secret;
+        $this->method = in_array( $method, array( 'disabled', 'totp', 'email' ), true ) ? $method : 'disabled';
+        $this->secret = (string)$secret;
         $this->verified = (bool)$verified;
         $this->createdAt = $createdAt ? (int)$createdAt : time();
+        $this->lastStep = $lastStep === null ? null : (int)$lastStep;
     }
 
     /**
-     * eZ template / attribute access helper.
+     * Template access. A template sees the secret of an enrolment that is not
+     * confirmed yet only ('secret', 'enrolment_secret'); once confirmed it is
+     * never shown again.
      * @param string $name
      * @return mixed
      */
@@ -55,14 +68,50 @@ class sevenxAuthentication2fa
         {
             case 'method':
                 return $this->method;
-            case 'secret':
-                return $this->secret;
             case 'verified':
                 return $this->verified;
             case 'created_at':
                 return $this->createdAt;
+            case 'is_active':
+                return $this->isActive();
+            case 'has_secret':
+                return $this->secret !== '';
+            case 'is_enrolling':
+                return $this->method === 'totp' && !$this->verified && $this->secret !== '';
+            case 'secret':
+                // Older templates: the secret of an enrolment only, never a confirmed one
+            case 'enrolment_secret':
+                // The secret of an enrolment that is not confirmed yet: the user has to type it into the app
+                return ( $this->method === 'totp' && !$this->verified ) ? $this->secret : '';
+            case 'enrolment_secret_grouped':
+                return sevenxAuthentication2faTOTP::groupSecret( $this->attribute( 'enrolment_secret' ) );
+            case 'enrolment_qr':
+                // Drawn on the server into a data: URI; the secret goes to no other service
+                return $this->attribute( 'is_enrolling' ) ? sevenxAuthentication2faQR::pngDataUri( $this->provisioningUri() ) : '';
         }
         return null;
+    }
+
+    /**
+     * The account name an authenticator app shows (set by the datatype).
+     * @var string
+     */
+    private $account = '';
+
+    public function setAccount( $account )
+    {
+        $this->account = (string)$account;
+    }
+
+    /**
+     * The otpauth:// URI of an enrolment, with the site's TOTP settings.
+     * @return string
+     */
+    public function provisioningUri()
+    {
+        $helper = sevenxAuthentication2faHelper::instance();
+        $s = $helper->totpSettings();
+        return sevenxAuthentication2faTOTP::provisioningUri( $this->account !== '' ? $this->account : 'user', $this->secret, $helper->issuer(), $s['digits'], $s['period'], $s['algorithm'] );
     }
 
     /**
@@ -71,7 +120,19 @@ class sevenxAuthentication2fa
      */
     public function hasAttribute( $name )
     {
-        return in_array( $name, array( 'method', 'secret', 'verified', 'created_at' ) );
+        return in_array( $name, array( 'method', 'secret', 'verified', 'created_at', 'is_active', 'has_secret', 'is_enrolling',
+                                       'enrolment_secret', 'enrolment_secret_grouped', 'enrolment_qr' ), true );
+    }
+
+    /**
+     * Does this configuration ask for a second step at sign-in?
+     * @return bool
+     */
+    public function isActive()
+    {
+        if ( $this->method === 'email' )
+            return true;
+        return $this->method === 'totp' && $this->verified && $this->secret !== '';
     }
 
     public function method()
@@ -81,7 +142,7 @@ class sevenxAuthentication2fa
 
     public function setMethod( $method )
     {
-        $this->method = $method;
+        $this->method = in_array( $method, array( 'disabled', 'totp', 'email' ), true ) ? $method : 'disabled';
     }
 
     public function secret()
@@ -91,7 +152,7 @@ class sevenxAuthentication2fa
 
     public function setSecret( $secret )
     {
-        $this->secret = $secret;
+        $this->secret = (string)$secret;
     }
 
     public function verified()
@@ -109,22 +170,35 @@ class sevenxAuthentication2fa
         return $this->createdAt;
     }
 
+    public function lastStep()
+    {
+        return $this->lastStep;
+    }
+
+    public function setLastStep( $step )
+    {
+        $this->lastStep = $step === null ? null : (int)$step;
+    }
+
     /**
-     * @return string JSON representation
+     * @return string JSON representation, the secret encrypted when a key is configured
      */
     public function toJson()
     {
-        return json_encode( array(
-            'method'    => $this->method,
-            'secret'    => $this->secret,
-            'verified'  => $this->verified,
-            'created_at'=> $this->createdAt,
-        ) );
+        $data = array(
+            'method'     => $this->method,
+            'secret'     => sevenxAuthentication2faCrypto::encrypt( $this->secret ),
+            'verified'   => $this->verified,
+            'created_at' => $this->createdAt,
+        );
+        if ( $this->lastStep !== null )
+            $data['last_step'] = $this->lastStep;
+        return json_encode( $data );
     }
 
     /**
      * @param string $json
-     * @return sevenxAuthentication2fa|null
+     * @return sevenxAuthentication2fa
      */
     public static function fromJson( $json )
     {
@@ -137,9 +211,10 @@ class sevenxAuthentication2fa
 
         return new self(
             isset( $data['method'] ) ? $data['method'] : 'disabled',
-            isset( $data['secret'] ) ? $data['secret'] : '',
+            isset( $data['secret'] ) ? sevenxAuthentication2faCrypto::decrypt( $data['secret'] ) : '',
             isset( $data['verified'] ) ? $data['verified'] : false,
-            isset( $data['created_at'] ) ? $data['created_at'] : null
+            isset( $data['created_at'] ) ? $data['created_at'] : null,
+            isset( $data['last_step'] ) ? $data['last_step'] : null
         );
     }
 }

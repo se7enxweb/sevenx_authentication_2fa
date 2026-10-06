@@ -12,15 +12,19 @@
 /*!
   \class eZsevenxUser2faUser ezsevenxuser2fauser.php
   \ingroup sevenx_authentication_2fa
-  \brief Login handler that enforces 2FA after password authentication.
+  \brief Login handler that asks for a second step after the password.
 
   Usage:
     [UserSettings]
     LoginHandler[]=sevenxUser2fa
 
-  The handler validates the username/password, then either completes the login
-  (when 2FA is disabled) or redirects the browser to the user2fa/verify view
-  to collect the OTP code.
+  The handler checks the username and password. When the user has no second
+  step (and none is enforced) it signs the user in as the standard handler
+  does. Otherwise the user is NOT signed in: the session only remembers who
+  passed the password (sevenxAuthentication2faHelper::SESSION_PENDING), and
+  the browser goes to user2fa/verify, or to user2fa/setup when Enforce2FA asks
+  for a method first. Only a right code there signs the user in
+  (completeLogin(), which also starts a new session id).
 */
 class eZsevenxUser2faUser extends eZUser
 {
@@ -29,7 +33,7 @@ class eZsevenxUser2faUser extends eZUser
      * @param string $login
      * @param string $password
      * @param bool $authenticationMatch
-     * @return eZUser|false|array
+     * @return eZUser|false
      */
     public static function loginUser( $login, $password, $authenticationMatch = false )
     {
@@ -37,26 +41,29 @@ class eZsevenxUser2faUser extends eZUser
 
         if ( !$helper->isEnabled() )
         {
-            sevenxAuthentication2faHelper::authLog( '2fa_handler_disabled', 'falling back to standard login for login=' . $login, 0 );
-            return self::standardLogin( $login, $password, $authenticationMatch );
+            return parent::loginUser( $login, $password, $authenticationMatch );
         }
-
-        sevenxAuthentication2faHelper::authLog( '2fa_login_attempt', 'login=' . $login, 0 );
 
         $user = self::_loginUser( $login, $password, $authenticationMatch );
 
         if ( !$user instanceof eZUser )
         {
-            self::loginFailed( $user, $login );
+            // The standard handler, when it comes next, tries the same password and counts the failure itself
+            if ( !self::standardHandlerFollows() )
+                self::loginFailed( $user, $login );
+            sevenxAuthentication2faHelper::authLog( 'login_failed', 'password step', is_numeric( $user ) ? (int)$user : 0 );
             return false;
         }
 
-        // Log the user in at the Exponential level before any 2FA redirect.
-        // The setup/verify views will then see a fully authenticated current user.
-        self::loginSucceeded( $user );
+        // A user who may not use this siteaccess is refused by the login view before any second step
+        if ( isset( $GLOBALS['eZCurrentAccess'] ) && !$user->canLoginToSiteAccess( $GLOBALS['eZCurrentAccess'] ) )
+        {
+            return $user;
+        }
 
         if ( self::startChallenge( $user ) === true )
         {
+            self::completeLogin( $user );
             return $user;
         }
 
@@ -64,73 +71,106 @@ class eZsevenxUser2faUser extends eZUser
     }
 
     /**
+     * Is 'standard' one of the login handlers after this one?
+     * @return bool
+     */
+    protected static function standardHandlerFollows()
+    {
+        $handlers = (array)eZINI::instance()->variable( 'UserSettings', 'LoginHandler' );
+        $seen = false;
+        foreach ( $handlers as $handler )
+        {
+            if ( $seen && $handler === 'standard' )
+                return true;
+            if ( $handler === 'sevenxUser2fa' )
+                $seen = true;
+        }
+        return false;
+    }
+
+    /**
+     * Where to go after signing in: the login form's RedirectURI, the session's
+     * RedirectAfterLogin, the page viewed last, else '/'. Always a safe path.
+     * @return string
+     */
+    public static function loginRedirect()
+    {
+        $http = eZHTTPTool::instance();
+        $candidates = array();
+        if ( $http->hasPostVariable( 'RedirectURI' ) )
+            $candidates[] = $http->postVariable( 'RedirectURI' );
+        if ( $http->hasSessionVariable( 'RedirectAfterLogin', false ) )
+            $candidates[] = $http->sessionVariable( 'RedirectAfterLogin' );
+        if ( $http->hasSessionVariable( 'LastAccessesURI', false ) )
+            $candidates[] = $http->sessionVariable( 'LastAccessesURI' );
+
+        foreach ( $candidates as $candidate )
+        {
+            if ( !is_string( $candidate ) || trim( $candidate ) === '' || trim( $candidate ) === '/' )
+                continue;
+            $safe = sevenxAuthentication2faRedirect::safe( $candidate, '' );
+            if ( $safe !== '' )
+                return $safe;
+        }
+        return '/';
+    }
+
+    /**
      * Start a 2FA challenge for the given user if one is required.
      * Exits the request when redirecting to the challenge or setup page.
      * @param eZUser $user
-     * @param string|null $redirect
+     * @param string|null $redirect where to go after the second step (checked again)
      * @return bool true when no 2FA challenge is required
      */
     public static function startChallenge( eZUser $user, $redirect = null )
     {
         $helper = sevenxAuthentication2faHelper::instance();
-        $userID = $user->attribute( 'contentobject_id' );
+        $userID = (int)$user->attribute( 'contentobject_id' );
         $method = $helper->userMethod( $userID );
+        $redirect = $redirect === null ? self::loginRedirect() : sevenxAuthentication2faHelper::normalizeRedirect( $redirect );
 
-        if ( $redirect === null )
-        {
-            $http = eZHTTPTool::instance();
-            $redirect = '/';
-            if ( $http->hasSessionVariable( 'RedirectAfterLogin' ) )
-            {
-                $redirect = $http->sessionVariable( 'RedirectAfterLogin' );
-            }
-            elseif ( $http->hasPostVariable( 'RedirectURI' ) )
-            {
-                $redirect = $http->postVariable( 'RedirectURI' );
-            }
-            $redirect = sevenxAuthentication2faHelper::normalizeRedirect( $redirect );
-        }
+        // No half-finished second step of an earlier attempt is carried over
+        $helper->removePendingChallenge();
 
         if ( $method === sevenxAuthentication2faHelper::METHOD_DISABLED )
         {
             if ( $helper->isEnforced() )
             {
-                sevenxAuthentication2faHelper::authLog( '2fa_enforced_setup_redirect', 'user=' . $user->attribute( 'login' ), $userID );
+                sevenxAuthentication2faHelper::authLog( '2fa_enforced_setup_redirect', '', $userID );
                 return self::redirectToSetup( $user, $redirect );
             }
-            sevenxAuthentication2faHelper::authLog( '2fa_not_required', 'user=' . $user->attribute( 'login' ), $userID );
+            sevenxAuthentication2faHelper::authLog( '2fa_not_required', '', $userID );
             return true;
         }
-
-        sevenxAuthentication2faHelper::authLog( '2fa_challenge_started', 'method=' . $method, $userID );
 
         if ( $method === sevenxAuthentication2faHelper::METHOD_TOTP )
         {
             $data = $helper->userData( $userID );
-            if ( !$data || !$data->secret() )
+            if ( !$data || !$data->isActive() || $data->method() !== sevenxAuthentication2faHelper::METHOD_TOTP )
             {
-                // User is supposed to use TOTP but has no secret; fall back to email if allowed.
-                if ( $helper->allowEmailFallback() && $user->attribute( 'email' ) )
-                {
+                // TOTP is asked for but this user has no working authenticator. One that was set up and broke
+                // (its secret unreadable, e.g. after the key changed) may fall back to e-mail codes; a user who
+                // never set one up (Enforce2FA with DefaultMethod=totp) sets it up now
+                $configured = $data && $data->method() === sevenxAuthentication2faHelper::METHOD_TOTP && $data->verified();
+                if ( $configured && $helper->allowEmailFallback() && $user->attribute( 'email' ) )
                     $method = sevenxAuthentication2faHelper::METHOD_EMAIL;
-                }
                 else
-                {
-                    return self::redirectToSetup( $user );
-                }
-            }
-
-            if ( $method === sevenxAuthentication2faHelper::METHOD_TOTP )
-            {
-                // For TOTP the pending "code" session value is actually the secret.
-                // The user reads the current code from their authenticator app.
-                $helper->setPendingChallenge( $userID, $method, $data->secret(), 300, $redirect );
+                    return self::redirectToSetup( $user, $redirect );
             }
         }
 
+        sevenxAuthentication2faHelper::authLog( '2fa_challenge_started', 'method=' . $method, $userID );
+        $limits = $helper->limits();
+
         if ( $method === sevenxAuthentication2faHelper::METHOD_EMAIL )
         {
+            if ( !$user->attribute( 'email' ) )
+                return self::redirectToSetup( $user, $redirect );
             sevenxAuthentication2faEmail::sendCode( $user, $redirect );
+        }
+        else
+        {
+            $helper->startPending( $userID, sevenxAuthentication2faHelper::METHOD_TOTP, $limits['challenge_ttl'], $redirect );
         }
 
         // Redirect to the 2FA verification view.
@@ -143,67 +183,47 @@ class eZsevenxUser2faUser extends eZUser
     }
 
     /**
-     * Complete a normal login after the user has passed 2FA or has 2FA disabled.
+     * Sign a user in after the second step (or when none is needed): the
+     * kernel's house keeping (new session id, last visit, failed logins reset,
+     * the audit record), plus the audit entry of earlier versions.
      * @param eZUser $user
      * @return eZUser
      */
-    protected static function loginSucceeded( $user )
+    public static function completeLogin( eZUser $user )
     {
-        $userID = $user->attribute( 'contentobject_id' );
-        sevenxAuthentication2faHelper::authLog( 'login_succeeded', 'login=' . $user->attribute( 'login' ), $userID );
+        $userID = (int)$user->attribute( 'contentobject_id' );
+        parent::loginSucceeded( $user );
         eZAudit::writeAudit( 'user-login', array( 'User id' => $userID, 'User login' => $user->attribute( 'login' ) ) );
-        eZUser::updateLastVisit( $userID, true );
-        eZUser::setCurrentlyLoggedInUser( $user, $userID );
-        eZUser::setFailedLoginAttempts( $userID, 0 );
+        sevenxAuthentication2faHelper::authLog( 'login_succeeded', '', $userID );
         return $user;
     }
 
     /**
-     * Shortcut for when the extension is disabled.
-     * @param string $login
-     * @param string $password
-     * @param bool $authenticationMatch
-     * @return eZUser|false
+     * Count a wrong second-step code as a failed login of the account, so the
+     * account lock (site.ini [UserSettings] MaxNumberOfFailedLogin) applies.
+     * @param int $userID
      */
-    protected static function standardLogin( $login, $password, $authenticationMatch )
+    public static function countFailedCode( $userID )
     {
-        $user = self::_loginUser( $login, $password, $authenticationMatch );
-        if ( $user instanceof eZUser )
-            return self::loginSucceeded( $user );
-        return false;
+        eZUser::setFailedLoginAttempts( (int)$userID );
     }
 
     /**
-     * Log failed login attempts.
-     * @param mixed $user
-     * @param string $login
-     */
-    protected static function loginFailed( $user, $login )
-    {
-        $userID = is_numeric( $user ) ? $user : false;
-        sevenxAuthentication2faHelper::authLog( 'login_failed', 'login=' . $login, $userID );
-        eZAudit::writeAudit( 'user-failed-login', array( 'User id' => $userID, 'User login' => $login ) );
-        if ( $userID )
-            eZUser::setFailedLoginAttempts( $userID, eZUser::failedLoginAttemptsByUserID( $userID ) + 1 );
-    }
-
-    /**
-     * Redirect the user to the 2FA setup page if TOTP is required but not configured.
+     * Redirect the user to the 2FA setup page because a method has to be set up first.
      * @param eZUser $user
      * @param string $redirect URL to go to after setup is complete
      */
     public static function redirectToSetup( eZUser $user, $redirect = '/' )
     {
-        $redirect = sevenxAuthentication2faHelper::normalizeRedirect( $redirect );
-        $http = eZHTTPTool::instance();
-        $userID = $user->attribute( 'contentobject_id' );
-        $http->setSessionVariable( 'Sevenx2FA_SetupUserID', $userID );
-        $http->setSessionVariable( 'Sevenx2FA_SetupRedirect', $redirect );
-        sevenxAuthentication2faHelper::authLog( '2fa_setup_redirect', 'login=' . $user->attribute( 'login' ), $userID );
+        $helper = sevenxAuthentication2faHelper::instance();
+        $userID = (int)$user->attribute( 'contentobject_id' );
+        $helper->startSetup( $userID, $redirect );
+        sevenxAuthentication2faHelper::authLog( '2fa_setup_redirect', '', $userID );
         $url = 'user2fa/setup';
         eZURI::transformURI( $url );
         eZSession::stop();
-        $http->redirect( $url );
+        eZHTTPTool::instance()->redirect( $url );
         eZExecution::cleanExit();
+        return false;
     }
 }

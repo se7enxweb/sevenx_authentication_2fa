@@ -9,32 +9,17 @@
 // (at your option) any later version.
 //
 
-// Polyfill for PHP < 5.6 where hash_equals() is unavailable.
-if ( !function_exists( 'hash_equals' ) )
-{
-    function hash_equals( $knownString, $userString )
-    {
-        $knownLen = strlen( $knownString );
-        $userLen = strlen( $userString );
-        if ( $knownLen !== $userLen )
-            return false;
-        $result = 0;
-        for ( $i = 0; $i < $knownLen; $i++ )
-        {
-            $result |= ord( $knownString[$i] ) ^ ord( $userString[$i] );
-        }
-        return $result === 0;
-    }
-}
-
 /*!
   \class sevenxAuthentication2faTOTP sevenxauthentication2fatotp.php
   \ingroup sevenx_authentication_2fa
   \brief TOTP (RFC 6238) implementation without external dependencies.
 
-  Generates Base32 secrets and 6-digit time-based codes compatible with
-  Google Authenticator, Authy, Microsoft Authenticator and any other
-  RFC 6238 / RFC 4226 compliant application.
+  Generates Base32 secrets and time-based codes compatible with Google
+  Authenticator, Authy, Microsoft Authenticator and any other RFC 6238 /
+  RFC 4226 compliant application.
+
+  Plain PHP: nothing of Exponential is needed, so the unit tests run it
+  without a database or settings.
 */
 class sevenxAuthentication2faTOTP
 {
@@ -45,21 +30,33 @@ class sevenxAuthentication2faTOTP
     private static $base32Alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
     /**
-     * Generate a random Base32 encoded secret.
-     * @param int $length number of bytes of entropy
+     * The algorithms an authenticator app understands.
+     * @var array
+     */
+    private static $algorithms = array( 'SHA1', 'SHA256', 'SHA512' );
+
+    /**
+     * Generate a random Base32 encoded secret from $bytes bytes of entropy.
+     * The default, 20 bytes (160 bits), is what RFC 4226 recommends; it gives
+     * a 32 character secret.
+     * @param int $bytes number of random bytes
      * @return string
      */
-    public static function generateSecret( $length = 20 )
+    public static function generateSecret( $bytes = 20 )
     {
-        $secret = '';
-        for ( $i = 0; $i < $length; $i++ )
-        {
-            if ( function_exists( 'random_int' ) )
-                $secret .= self::$base32Alphabet[random_int( 0, 31 )];
-            else
-                $secret .= self::$base32Alphabet[mt_rand( 0, 31 )];
-        }
-        return $secret;
+        $bytes = max( 16, min( 64, (int)$bytes ) );
+        return self::base32Encode( random_bytes( $bytes ) );
+    }
+
+    /**
+     * The algorithm name if an authenticator app understands it, else SHA1.
+     * @param string $algorithm
+     * @return string
+     */
+    public static function algorithm( $algorithm )
+    {
+        $algorithm = strtoupper( (string)$algorithm );
+        return in_array( $algorithm, self::$algorithms, true ) ? $algorithm : 'SHA1';
     }
 
     /**
@@ -74,14 +71,29 @@ class sevenxAuthentication2faTOTP
      */
     public static function provisioningUri( $account, $secret, $issuer = 'Exponential', $digits = 6, $period = 30, $algorithm = 'SHA1' )
     {
-        $label = rawurlencode( $issuer . ':' . $account );
-        $issuerParam = rawurlencode( $issuer );
-        $algorithm = strtoupper( $algorithm );
-        return "otpauth://totp/{$label}?secret={$secret}&issuer={$issuerParam}&digits={$digits}&period={$period}&algorithm={$algorithm}";
+        $label = rawurlencode( $issuer ) . ':' . rawurlencode( $account );
+        $query = 'secret=' . rawurlencode( $secret )
+               . '&issuer=' . rawurlencode( $issuer )
+               . '&digits=' . (int)$digits
+               . '&period=' . (int)$period
+               . '&algorithm=' . self::algorithm( $algorithm );
+        return 'otpauth://totp/' . $label . '?' . $query;
     }
 
     /**
-     * Generate a TOTP code for the given secret and time slot.
+     * The time step (counter) a moment falls in.
+     * @param int $time Unix timestamp
+     * @param int $period
+     * @return int
+     */
+    public static function timeStep( $time, $period = 30 )
+    {
+        $period = max( 1, (int)$period );
+        return intdiv( (int)$time, $period );
+    }
+
+    /**
+     * Generate a TOTP code for the given secret and time.
      * @param string $secret Base32 encoded secret
      * @param int|null $time Unix timestamp (null = now)
      * @param int $digits
@@ -93,20 +105,81 @@ class sevenxAuthentication2faTOTP
     {
         if ( $time === null )
             $time = time();
+        return self::codeForStep( $secret, self::timeStep( $time, $period ), $digits, $algorithm );
+    }
 
-        $counter = floor( $time / $period );
-        $secretBinary = self::base32Decode( $secret );
-        $counterBytes = pack( 'N*', 0 ) . pack( 'N*', $counter );
-        $hash = hash_hmac( strtolower( $algorithm ), $counterBytes, $secretBinary, true );
+    /**
+     * Generate the code of one time step (RFC 4226 HOTP with the step as counter).
+     * @param string $secret Base32 encoded secret
+     * @param int $step
+     * @param int $digits
+     * @param string $algorithm
+     * @return string
+     */
+    public static function codeForStep( $secret, $step, $digits = 6, $algorithm = 'SHA1' )
+    {
+        $digits = max( 6, min( 8, (int)$digits ) );
+        $step = max( 0, (int)$step );
+        $counterBytes = pack( 'N', ( $step >> 32 ) & 0xFFFFFFFF ) . pack( 'N', $step & 0xFFFFFFFF );
+        $hash = hash_hmac( strtolower( self::algorithm( $algorithm ) ), $counterBytes, self::base32Decode( $secret ), true );
 
-        $offset = ord( $hash[19] ) & 0x0F;
+        // Dynamic truncation: the offset is the low nibble of the LAST byte (19 for SHA1, 31 for SHA256, 63 for SHA512)
+        $offset = ord( $hash[strlen( $hash ) - 1] ) & 0x0F;
         $binary = ( ( ord( $hash[$offset] ) & 0x7F ) << 24 ) |
                   ( ( ord( $hash[$offset + 1] ) & 0xFF ) << 16 ) |
                   ( ( ord( $hash[$offset + 2] ) & 0xFF ) << 8 ) |
                   ( ord( $hash[$offset + 3] ) & 0xFF );
 
-        $otp = $binary % pow( 10, $digits );
+        $otp = $binary % ( 10 ** $digits );
         return str_pad( (string)$otp, $digits, '0', STR_PAD_LEFT );
+    }
+
+    /**
+     * Find the time step a user supplied code belongs to.
+     *
+     * Accepts the current step and $window steps before and after it (clock
+     * drift). A step at or before $lastStep is refused: that code, or an
+     * older one, was already used, so a code that was seen once (over a
+     * shoulder, in a proxy log) cannot be used again.
+     *
+     * @param string $secret Base32 encoded secret
+     * @param string $code user supplied code; spaces and dashes are ignored
+     * @param int $window number of steps before/after the current one to accept (0 to 3)
+     * @param int|null $time Unix timestamp (null = now)
+     * @param int $digits
+     * @param int $period
+     * @param string $algorithm
+     * @param int|null $lastStep the last step that was accepted for this secret
+     * @return int|false the matched step, or false
+     */
+    public static function matchStep( $secret, $code, $window = 1, $time = null, $digits = 6, $period = 30, $algorithm = 'SHA1', $lastStep = null )
+    {
+        if ( $time === null )
+            $time = time();
+        if ( !is_string( $secret ) || $secret === '' || !is_scalar( $code ) )
+            return false;
+
+        $digits = max( 6, min( 8, (int)$digits ) );
+        $code = preg_replace( '/[\s\-]/', '', (string)$code );
+        if ( !preg_match( '/^[0-9]{' . $digits . '}$/', $code ) )
+            return false;
+
+        $window = max( 0, min( 3, (int)$window ) );
+        $current = self::timeStep( $time, $period );
+        $match = false;
+        // Every candidate is computed and compared, so the time taken does not tell which step matched
+        for ( $i = -$window; $i <= $window; $i++ )
+        {
+            $step = $current + $i;
+            if ( $step < 0 )
+                continue;
+            if ( hash_equals( self::codeForStep( $secret, $step, $digits, $algorithm ), $code ) && $match === false )
+                $match = $step;
+        }
+
+        if ( $match !== false && $lastStep !== null && $match <= (int)$lastStep )
+            return false;
+        return $match;
     }
 
     /**
@@ -123,17 +196,27 @@ class sevenxAuthentication2faTOTP
      */
     public static function verify( $secret, $code, $window = 1, $time = null, $digits = 6, $period = 30, $algorithm = 'SHA1' )
     {
-        if ( $time === null )
-            $time = time();
+        return self::matchStep( $secret, $code, $window, $time, $digits, $period, $algorithm ) !== false;
+    }
 
-        $code = preg_replace( '/[^0-9]/', '', $code );
-        for ( $i = -$window; $i <= $window; $i++ )
-        {
-            $slot = $time + ( $i * $period );
-            if ( hash_equals( self::code( $secret, $slot, $digits, $period, $algorithm ), $code ) )
-                return true;
-        }
-        return false;
+    /**
+     * Is the string a Base32 secret of at least 16 characters (80 bits)?
+     * @param string $secret
+     * @return bool
+     */
+    public static function isValidSecret( $secret )
+    {
+        return is_string( $secret ) && (bool)preg_match( '/^[A-Z2-7]{16,128}$/', $secret );
+    }
+
+    /**
+     * The secret in groups of four characters, for reading it aloud or typing it.
+     * @param string $secret
+     * @return string
+     */
+    public static function groupSecret( $secret )
+    {
+        return trim( chunk_split( (string)$secret, 4, ' ' ) );
     }
 
     /**
@@ -143,20 +226,20 @@ class sevenxAuthentication2faTOTP
      */
     public static function base32Decode( $input )
     {
-        $input = strtoupper( $input );
-        $input = str_replace( '=', '', $input );
+        $input = strtoupper( (string)$input );
+        $input = str_replace( array( '=', ' ' ), '', $input );
         $output = '';
         $buffer = 0;
         $bufferSize = 0;
 
-        for ( $i = 0; $i < strlen( $input ); $i++ )
+        $length = strlen( $input );
+        for ( $i = 0; $i < $length; $i++ )
         {
-            $char = $input[$i];
-            $value = strpos( self::$base32Alphabet, $char );
+            $value = strpos( self::$base32Alphabet, $input[$i] );
             if ( $value === false )
                 continue;
 
-            $buffer = ( $buffer << 5 ) | $value;
+            $buffer = ( ( $buffer << 5 ) | $value ) & 0xFFFFFF;
             $bufferSize += 5;
 
             if ( $bufferSize >= 8 )
@@ -169,20 +252,20 @@ class sevenxAuthentication2faTOTP
     }
 
     /**
-     * Encode binary data into Base32.
+     * Encode binary data into Base32 (no padding).
      * @param string $data
      * @return string
      */
     public static function base32Encode( $data )
     {
-        $input = '';
         $output = '';
         $buffer = 0;
         $bufferSize = 0;
 
-        for ( $i = 0; $i < strlen( $data ); $i++ )
+        $length = strlen( $data );
+        for ( $i = 0; $i < $length; $i++ )
         {
-            $buffer = ( $buffer << 8 ) | ord( $data[$i] );
+            $buffer = ( ( $buffer << 8 ) | ord( $data[$i] ) ) & 0xFFFFFF;
             $bufferSize += 8;
 
             while ( $bufferSize >= 5 )

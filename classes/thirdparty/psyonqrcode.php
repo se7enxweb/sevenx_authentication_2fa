@@ -46,7 +46,7 @@ class sevenxPsyonQRCode {
 
 		header('Content-Type: image/png');
 		imagepng($image);
-		imagedestroy($image);
+		if (PHP_VERSION_ID < 80000) imagedestroy($image); // a no-op since PHP 8.0, deprecated in 8.5
 	}
 
 	public function render_image() {

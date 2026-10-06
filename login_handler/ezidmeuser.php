@@ -23,6 +23,12 @@ class eZIdmeUser extends eZOAuthUser
 {
     protected $provider = 'idme';
 
+    public function displayName()
+    {
+        $name = $this->setting( 'DisplayName' );
+        return $name !== '' ? $name : 'ID.me';
+    }
+
     /**
      * Require ClientID, ClientSecret and a non-empty community scope.
      * @return bool

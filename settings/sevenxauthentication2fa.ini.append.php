@@ -48,6 +48,33 @@ Sender=
 # Secret length in bytes (Base32 encoded secret length will be larger).
 SecretLength=20
 
+# A key that encrypts TOTP secrets where they are stored (AES-256-GCM). Set it
+# in settings/override, never here, to a long random value, e.g. the output of
+#   openssl rand -base64 48
+# The environment variable SEVENX_2FA_SECRET_KEY takes precedence. Without a
+# key secrets are stored in plain text in the user object. Secrets stored
+# before a key was set keep working and are encrypted when next stored;
+# changing or losing the key makes every stored secret unreadable, so those
+# users have to set up their authenticator again.
+SecretKey=
+
+[Security]
+# Wrong codes allowed for one sign-in; after that the password is asked again.
+# Every wrong code also counts as a failed login of the account
+# (site.ini [UserSettings] MaxNumberOfFailedLogin).
+MaxAttempts=5
+
+# Seconds the second step of one sign-in stays open (authenticator codes).
+# E-mail codes use [CodeSettings] EmailTTL.
+ChallengeTTL=300
+
+# Seconds before another e-mail code may be asked for, and how many times.
+ResendInterval=60
+MaxResends=3
+
+# Seconds a user who has to set up a second step first (Enforce2FA) has for it.
+SetupTTL=900
+
 [SocialLogin]
 # Master switch for OAuth/social login handlers.
 Enabled=disabled

@@ -19,6 +19,22 @@ class eZTwitterUser extends eZOAuthUser
     protected $provider = 'twitter';
 
     /**
+     * The settings block is [TwitterX] (sevenxauthentication2fa.ini); [Twitter] is read when a site has one.
+     * @return string
+     */
+    public function iniBlock()
+    {
+        $ini = eZINI::instance( 'sevenxauthentication2fa.ini' );
+        return $ini->hasGroup( 'Twitter' ) ? 'Twitter' : 'TwitterX';
+    }
+
+    public function displayName()
+    {
+        $name = $this->setting( 'DisplayName' );
+        return $name !== '' ? $name : 'X';
+    }
+
+    /**
      * The Twitter / X v2 API returns user data nested under a 'data' key.
      * @param array $info
      * @return array

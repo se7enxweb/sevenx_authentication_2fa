@@ -9,30 +9,36 @@
 // (at your option) any later version.
 //
 
-$provider = isset( $Params['provider'] ) ? strtolower( $Params['provider'] ) : '';
+/* The start of a social login (user2fa/oauth/<provider>): sends the browser to
+   the provider with a fresh state (and PKCE where configured). An optional
+   RedirectURI (GET) says where to go after signing in; it is checked by the
+   safe redirect rules and kept in the session. A provider that is unknown or
+   not configured gets the callback page's explanation instead. */
 
-if ( !$provider )
+$Module = $Params['Module'];
+$provider = eZOAuthUser::providerKey( isset( $Params['provider'] ) ? $Params['provider'] : '' );
+$handler = $provider !== '' ? eZOAuthUser::handlerFor( $provider ) : null;
+sevenxAuthentication2faHelper::noStore();
+
+if ( !$handler || !$handler->isConfigured() )
 {
-    sevenxAuthentication2faHelper::authLog( 'oauth_missing_provider', 'no provider given' );
-    eZHTTPTool::redirect( '/user/login' );
-    eZExecution::cleanExit();
+    sevenxAuthentication2faHelper::authLog( $handler ? 'oauth_not_configured' : 'oauth_invalid_provider', 'provider=' . $provider );
+    $tpl = eZTemplate::factory();
+    $tpl->setVariable( 'status', $handler ? 'not_configured' : 'unknown_provider' );
+    $tpl->setVariable( 'provider', $provider );
+    $tpl->setVariable( 'provider_name', $handler ? $handler->displayName() : '' );
+    $Result = array();
+    $Result['content'] = $tpl->fetch( 'design:user2fa/callback.tpl' );
+    $Result['path'] = array( array( 'text' => ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Social login' ), 'url' => false ) );
+    $pageLayout = sevenxAuthentication2faHelper::pageLayout();
+    if ( $pageLayout )
+        $Result['pagelayout'] = $pageLayout;
+    return $Result;
 }
+
+$http = eZHTTPTool::instance();
+$redirect = $http->hasGetVariable( 'RedirectURI' ) ? $http->getVariable( 'RedirectURI' ) : '';
+$handler->setReturnTarget( is_string( $redirect ) ? $redirect : '' );
 
 sevenxAuthentication2faHelper::authLog( 'oauth_attempt', 'provider=' . $provider );
-
-$className = 'eZ' . ucfirst( $provider ) . 'User';
-if ( !class_exists( $className ) || !is_subclass_of( $className, 'eZOAuthUser' ) )
-{
-    sevenxAuthentication2faHelper::authLog( 'oauth_invalid_provider', 'class=' . $className );
-    eZHTTPTool::redirect( '/user/login' );
-    eZExecution::cleanExit();
-}
-
-$handler = new $className();
-if ( !$handler->isConfigured() )
-{
-    sevenxAuthentication2faHelper::authLog( 'oauth_not_configured', 'provider=' . $provider );
-    eZHTTPTool::redirect( '/user/login' );
-    eZExecution::cleanExit();
-}
 $handler->preCollectUserInfo();

@@ -25,11 +25,15 @@ class eZGoogleUser extends eZOAuthUser
      */
     protected function normalizeUserInfo( $info )
     {
-        return array(
+        $normalized = array(
             'id'    => isset( $info['sub'] ) ? $info['sub'] : ( isset( $info['id'] ) ? $info['id'] : '' ),
             'email' => isset( $info['email'] ) ? $info['email'] : '',
             'name'  => isset( $info['name'] ) ? $info['name'] : '',
         );
+        // Google says whether it verified the address; an unverified one is refused by eZOAuthUser::handleCallback()
+        if ( array_key_exists( 'email_verified', $info ) )
+            $normalized['email_verified'] = $info['email_verified'];
+        return $normalized;
     }
 
     protected function fetchUserInfo( $token )
