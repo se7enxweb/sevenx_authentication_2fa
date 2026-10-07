@@ -34,4 +34,8 @@ PolicyOmitList[]=user2fa/setup
 PolicyOmitList[]=user2fa/callback
 PolicyOmitList[]=user2fa/oauth
 
+# The extension's own interface strings (translations/<locale>/translation.ts)
+[RegionalSettings]
+TranslationExtensions[]=sevenx_authentication_2fa
+
 */ ?>
