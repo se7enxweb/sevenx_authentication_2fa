@@ -670,7 +670,7 @@ abstract class eZOAuthUser extends eZUser
             $result = curl_exec( $ch );
             $status = (int)curl_getinfo( $ch, CURLINFO_RESPONSE_CODE );
             if ( PHP_VERSION_ID < 80000 )
-                curl_close( $ch );
+                if ( PHP_VERSION_ID < 80000 ) curl_close( $ch ); // no effect since PHP 8.0, deprecated in 8.5
             return ( $result !== false && $status >= 200 && $status < 300 ) ? $result : false;
         }
 
