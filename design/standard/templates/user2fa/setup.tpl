@@ -166,19 +166,7 @@
 {/if}
 
 {if $show_enrol}
-<script type="text/javascript">
-{literal}
-(function () {
-    var form = document.getElementById( 'tfa-setup-form' ), enrol = document.getElementById( 'tfa-enrol' );
-    if ( !form || !enrol ) return;
-    function update() {
-        var picked = form.querySelector( 'input[name="Method"]:checked' );
-        enrol.hidden = !picked || picked.value !== 'totp';
-    }
-    form.addEventListener( 'change', function ( e ) { if ( e.target && e.target.name === 'Method' ) update(); } );
-    update();
-})();
-{/literal}
-</script>
+{* the enrolment is shown while "totp" is picked: sevenx_authentication_2fa_setup.js, no inline script *}
+{ezscript( array( 'sevenx_authentication_2fa_setup.js' ) )}
 {/if}
 {undef $active $method_now $show_enrol $setup_node}
