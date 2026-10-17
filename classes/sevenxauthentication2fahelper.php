@@ -521,7 +521,7 @@ class sevenxAuthentication2faHelper
     }
 
     /**
-     * Write a security audit entry to var/log/auth.log (and to ezdebug).
+     * Write a security audit entry to var/log/auth.log (and to the debug output).
      * @param string $action short action tag, e.g. '2fa_verify_failed'
      * @param string $details free-form details; never a code, a secret or a password
      * @param int|null $userID user id if known, null uses current user
@@ -570,7 +570,8 @@ class sevenxAuthentication2faHelper
         );
 
         eZLog::write( $message, 'auth.log', 'var/log' );
-        eZDebug::writeNotice( $message, 'sevenx_authentication_2fa:auth' );
+        // auth.log is the audit trail; the debug output only shows it (a notice copied every login into notice.log)
+        eZDebug::writeDebug( $message, 'sevenx_authentication_2fa:auth' );
     }
 
     /**
