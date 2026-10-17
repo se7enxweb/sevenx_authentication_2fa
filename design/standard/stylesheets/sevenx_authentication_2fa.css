@@ -4,7 +4,7 @@
    user object.
 
    Loaded through design.ini [StylesheetSettings] (FrontendCSSFileList and BackendCSSFileList), so the ezjscore
-   packer bundles it, and required by user2fa/exp_style.tpl for the page layouts that load no list (the Admin UI's
+   packer bundles it, and linked by user2fa/exp_style.tpl for the page layouts that load no list (the Admin UI's
    sign-in page). Until 2026-10 it was a <style> block in that template, which a Content-Security-Policy without
    'unsafe-inline' for style-src drops.
 

@@ -80,8 +80,8 @@ icCheck( preg_match( '/^FrontendCSSFileList\[\]=sevenx_authentication_2fa\.css\s
          && preg_match( '/^BackendCSSFileList\[\]=sevenx_authentication_2fa\.css\s*$/m', $ini )
          && strpos( $pagesCss, '.exp-2fa {' ) !== false,
          "IC-04 design.ini loads $pages for the public and the administration designs" );
-icCheck( strpos( (string)@file_get_contents( $root . '/design/standard/templates/user2fa/exp_style.tpl' ), "ezcss_require( 'sevenx_authentication_2fa.css' )" ) !== false,
-         'IC-04 user2fa/exp_style.tpl requires the stylesheet for the page layouts that load no list' );
+icCheck( strpos( (string)@file_get_contents( $root . '/design/standard/templates/user2fa/exp_style.tpl' ), "href={'stylesheets/sevenx_authentication_2fa.css'|ezdesign}" ) !== false,
+         'IC-04 user2fa/exp_style.tpl links the stylesheet for the page layouts that load no list' );
 
 echo $failures ? "FAIL: $failures\n" : "PASS: all\n";
 exit( $failures ? 1 : 0 );
