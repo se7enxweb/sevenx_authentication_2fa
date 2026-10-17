@@ -65,5 +65,23 @@ if ( $prefix !== '' )
 if ( $prefix !== '' )
     icCheck( !$missing, "IC-03 every $prefix* class is defined" . ( $missing ? ': ' . implode( ', ', array_keys( $missing ) ) : '' ) );
 
+// IC-04 the standard design's two-factor templates (user2fa/exp_style.tpl, included by verify, setup, callback and
+// the admin's datatype edit template) carry no <style> block either: their stylesheet is loaded by design.ini for
+// the public and the administration designs, and defines the .exp-2fa frame
+$standard = array();
+$it = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root . '/design/standard/templates', FilesystemIterator::SKIP_DOTS ) );
+foreach ( $it as $file )
+    if ( substr( (string)$file, -4 ) === '.tpl' && preg_match_all( '/<style\b/i', preg_replace( '/\{\*.*?\*\}/s', '', file_get_contents( (string)$file ) ) ) )
+        $standard[] = substr( (string)$file, strlen( $root ) + 1 );
+icCheck( !$standard, 'IC-04 no <style> block in the standard design\'s templates' . ( $standard ? ': ' . implode( ', ', $standard ) : '' ) );
+$pages = 'design/standard/stylesheets/sevenx_authentication_2fa.css';
+$pagesCss = is_file( $root . '/' . $pages ) ? file_get_contents( $root . '/' . $pages ) : '';
+icCheck( preg_match( '/^FrontendCSSFileList\[\]=sevenx_authentication_2fa\.css\s*$/m', $ini )
+         && preg_match( '/^BackendCSSFileList\[\]=sevenx_authentication_2fa\.css\s*$/m', $ini )
+         && strpos( $pagesCss, '.exp-2fa {' ) !== false,
+         "IC-04 design.ini loads $pages for the public and the administration designs" );
+icCheck( strpos( (string)@file_get_contents( $root . '/design/standard/templates/user2fa/exp_style.tpl' ), "ezcss_require( 'sevenx_authentication_2fa.css' )" ) !== false,
+         'IC-04 user2fa/exp_style.tpl requires the stylesheet for the page layouts that load no list' );
+
 echo $failures ? "FAIL: $failures\n" : "PASS: all\n";
 exit( $failures ? 1 : 0 );
