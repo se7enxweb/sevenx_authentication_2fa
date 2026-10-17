@@ -1,0 +1,12 @@
+/* sevenx_authentication_2fa: the administration's styles of the extension that are not in user2fa/exp_style.tpl,
+   bundled by the ezjscore packer ([StylesheetSettings] BackendCSSFileList[] in settings/design.ini.append.php).
+   The admin templates carry no style="" attribute: a Content-Security-Policy without 'unsafe-inline' drops them.
+   Spacing comes from the admin tokens (--a4-space-*); the values after the comma are for a design without them.
+   The selectors are one class stronger than the .exp-2fa rules of exp_style.tpl, which come later in the page. */
+
+/* the 2FA field of a user object in the content edit form (content/datatype/edit/sevenxauthentication2fa.tpl) */
+.exp-2fa .exp-meta.exp-2fa-state { margin-bottom: var(--a4-space-2, 8px); }
+.exp-2fa .exp-field.exp-2fa-method { max-width: 420px; }
+.exp-2fa .exp-panel.exp-2fa-enrol,
+.exp-2fa .exp-field.exp-2fa-enrol-code { margin-top: var(--a4-space-3, 12px); }
+.exp-2fa .exp-help.exp-2fa-hint { margin-top: var(--a4-space-2, 8px); }

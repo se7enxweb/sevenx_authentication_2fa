@@ -19,7 +19,7 @@
 {/if}
 
 <div class="exp-2fa" id="{$id_base}_box">
-    <p class="exp-meta" style="margin-bottom: 8px;">
+    <p class="exp-meta exp-2fa-state">
         {if $data.is_active}
             {if eq( $method, 'totp' )}{'On: an authenticator app is set up and confirmed.'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'On: a code is sent by e-mail at each sign-in.'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}
         {elseif $data.is_enrolling}
@@ -33,7 +33,7 @@
     <div class="exp-feedback is-info"><p>{'Two-factor authentication is required. You must choose an authentication method.'|i18n( 'extension/sevenx_authentication_2fa' )}</p></div>
     {/if}
 
-    <div class="exp-field" style="max-width: 420px;">
+    <div class="exp-field exp-2fa-method">
         <label for="{$id_base}_method">{'Authentication method'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
         <select id="{$id_base}_method" name="{$attribute_base}_sevenxauthentication2fa_method_{$attribute.id}">
             {if not( $is_enforced )}<option value="disabled"{if eq( $method, 'disabled' )} selected="selected"{/if}>{'Disabled'|i18n( 'extension/sevenx_authentication_2fa' )}</option>{/if}
@@ -43,7 +43,7 @@
     </div>
 
     {if $data.is_enrolling}
-    <div class="exp-panel" id="{$id_base}_totp" style="margin-top: 12px;">
+    <div class="exp-panel exp-2fa-enrol" id="{$id_base}_totp">
         <div class="exp-pair">
             {if $data.enrolment_qr}<figure class="exp-qr"><img src="{$data.enrolment_qr}" width="180" height="180" alt="{'QR code for your authenticator app'|i18n( 'extension/sevenx_authentication_2fa' )}" /></figure>{/if}
             <dl class="exp-key">
@@ -51,14 +51,14 @@
                 <dd><code class="exp-secret">{$data.enrolment_secret_grouped|wash}</code></dd>
             </dl>
         </div>
-        <div class="exp-field" style="margin-top: 12px;">
+        <div class="exp-field exp-2fa-enrol-code">
             <label for="{$id_base}_code">{'Verification code'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
             <input id="{$id_base}_code" class="exp-code" type="text" name="{$attribute_base}_sevenxauthentication2fa_code_{$attribute.id}" value="" inputmode="numeric" maxlength="12" autocomplete="one-time-code" spellcheck="false" />
             <span class="exp-help">{'Add the key to the app, then enter the code it shows and save.'|i18n( 'extension/sevenx_authentication_2fa' )}</span>
         </div>
     </div>
     {elseif and( eq( $method, 'totp' ), $data.is_active|not )}
-    <p class="exp-help" style="margin-top: 8px;">{'Select TOTP and save to generate a secret.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+    <p class="exp-help exp-2fa-hint">{'Select TOTP and save to generate a secret.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
     {/if}
 </div>
 {undef $data $method $id_base $is_enforced}
