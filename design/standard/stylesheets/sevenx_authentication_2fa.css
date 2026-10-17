@@ -29,10 +29,10 @@
     --tf-accent: #c2410c;          /* white text on it is 5.2:1 */
     --tf-accent-hover: #9a3412;
     --tf-ring: rgba(194, 65, 12, 0.45);
-    --tf-ok: #166534;   --tf-ok-bg: #e7f5ea;   --tf-ok-line: #b7dfc1;
-    --tf-warn: #8a4b00; --tf-warn-bg: #fff3df; --tf-warn-line: #f3d19c;
-    --tf-bad: #b91c1c;  --tf-bad-bg: #fdecec;  --tf-bad-line: #f1b4b4;
-    --tf-info: #1e4fa8; --tf-info-bg: #e8effd; --tf-info-line: #bcd0f5;
+    --tf-ok: var(--a4-ok, #166534);   --tf-ok-bg: var(--a4-ok-bg, #e7f5ea);   --tf-ok-line: var(--a4-ok-line, #b7dfc1);
+    --tf-warn: var(--a4-warn, #8a4b00); --tf-warn-bg: var(--a4-warn-bg, #fff3df); --tf-warn-line: var(--a4-warn-line, #f3d19c);
+    --tf-bad: var(--a4-bad, #b91c1c);  --tf-bad-bg: var(--a4-bad-bg, #fdecec);  --tf-bad-line: var(--a4-bad-line, #f1b4b4);
+    --tf-info: var(--a4-info, #1e4fa8); --tf-info-bg: var(--a4-info-bg, #e8effd); --tf-info-line: var(--a4-info-line, #bcd0f5);
     --tf-radius: 12px;
     --tf-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     color: var(--tf-ink);
