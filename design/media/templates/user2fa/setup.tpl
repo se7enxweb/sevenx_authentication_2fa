@@ -108,7 +108,7 @@
         </form>
 
         {if and( ne( $method_now, 'disabled' ), $is_enforced|not, $is_pending_setup|not )}
-        <div class="acc-card" style="margin-top: 2rem;">
+        <div class="acc-card tfa-reset-card">
             <h2>{'Reset two-factor authentication'|i18n( 'extension/sevenx_authentication_2fa' )}</h2>
             <p class="acc-lead">{'Use this button only if you want to remove your existing 2FA configuration permanently.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
             <details class="tfa-confirm">
