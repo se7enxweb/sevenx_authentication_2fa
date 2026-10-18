@@ -209,3 +209,8 @@ html[data-a4-theme="dark"] body.a4-login-page .exp-2fa .exp-2fa-icon { backgroun
     .exp-2fa .exp-qr img { width: 160px; height: 160px; }
     body:not(.a4-login-page) .exp-2fa.is-signin { margin: 12px; padding: 18px 14px; }
 }
+
+/* Former style="" attributes of user2fa/setup.tpl: the code field under the method choice, the reset section */
+.exp-2fa .exp-field.exp-field-spaced { margin-top: 12px; }
+.exp-2fa .exp-section.exp-reset { margin-top: 22px; }
+.exp-2fa p.exp-reset-intro { margin-bottom: 10px; }

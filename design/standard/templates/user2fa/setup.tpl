@@ -113,7 +113,7 @@
 <div class="exp-panel">
     <div class="exp-panel-head"><h2 class="exp-h2">{'Your authenticator app is set up'|i18n( 'extension/sevenx_authentication_2fa' )}</h2></div>
     <p class="exp-muted">{'To switch to e-mail codes or turn the second step off, confirm with the code your app shows now. Its key is never shown again; to move to a new phone, remove the second step and set it up there.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
-    <div class="exp-field" style="margin-top: 12px;">
+    <div class="exp-field exp-field-spaced">
         <label for="tfa-code">{'Current code from your app'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
         <input id="tfa-code" class="exp-code" type="text" name="Code" value="" inputmode="numeric" pattern="[0-9 \-]*" maxlength="12"
                autocomplete="one-time-code" spellcheck="false"{if $error} aria-invalid="true" aria-describedby="tfa-setup-error"{/if} />
@@ -132,9 +132,9 @@
 </form>
 
 {if and( ne( $method_now, 'disabled' ), $is_enforced|not, $is_pending_setup|not )}
-<section class="exp-section" aria-labelledby="tfa-reset-title" style="margin-top: 22px;">
+<section class="exp-section exp-reset" aria-labelledby="tfa-reset-title">
 <h2 class="exp-h2" id="tfa-reset-title">{'Reset two-factor authentication'|i18n( 'extension/sevenx_authentication_2fa' )}</h2>
-<p class="exp-muted" style="margin-bottom: 10px;">{'Use this button only if you want to remove your existing 2FA configuration permanently.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+<p class="exp-muted exp-reset-intro">{'Use this button only if you want to remove your existing 2FA configuration permanently.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
 <details class="exp-confirm">
     <summary>{'Reset 2FA'|i18n( 'extension/sevenx_authentication_2fa' )}</summary>
     <div>
