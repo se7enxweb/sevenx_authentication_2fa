@@ -75,13 +75,13 @@ foreach ( $it as $file )
         $standard[] = substr( (string)$file, strlen( $root ) + 1 );
 icCheck( !$standard, 'IC-04 no <style> block in the standard design\'s templates' . ( $standard ? ': ' . implode( ', ', $standard ) : '' ) );
 $pagesInline = array();
-foreach ( array( 'exp_style', 'setup', 'verify', 'callback' ) as $view )
+foreach ( array( 'user2fa/exp_style', 'user2fa/setup', 'user2fa/verify', 'user2fa/callback', 'user2fa/parts/account_link', 'content/datatype/edit/sevenxauthentication2fa' ) as $view )
 {
-    $source = preg_replace( '/\{\*.*?\*\}/s', '', (string)@file_get_contents( $root . '/design/standard/templates/user2fa/' . $view . '.tpl' ) );
+    $source = preg_replace( '/\{\*.*?\*\}/s', '', (string)@file_get_contents( $root . '/design/standard/templates/' . $view . '.tpl' ) );
     if ( preg_match( '/(?<![\w.\-])style\s*=\s*["\'{]/i', $source ) )
-        $pagesInline[] = 'user2fa/' . $view . '.tpl';
+        $pagesInline[] = $view . '.tpl';
 }
-icCheck( !$pagesInline, 'IC-04 no style="" attribute in the two-factor pages' . ( $pagesInline ? ': ' . implode( ', ', $pagesInline ) : '' ) );
+icCheck( !$pagesInline, 'IC-04 no style="" attribute in the two-factor pages, the account link and the standard 2FA field' . ( $pagesInline ? ': ' . implode( ', ', $pagesInline ) : '' ) );
 $pages = 'design/standard/stylesheets/sevenx_authentication_2fa.css';
 $pagesCss = is_file( $root . '/' . $pages ) ? file_get_contents( $root . '/' . $pages ) : '';
 icCheck( preg_match( '/^FrontendCSSFileList\[\]=sevenx_authentication_2fa\.css\s*$/m', $ini )

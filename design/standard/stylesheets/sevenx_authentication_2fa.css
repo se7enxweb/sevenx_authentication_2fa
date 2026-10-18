@@ -214,3 +214,24 @@ html[data-a4-theme="dark"] body.a4-login-page .exp-2fa .exp-2fa-icon { backgroun
 .exp-2fa .exp-field.exp-field-spaced { margin-top: 12px; }
 .exp-2fa .exp-section.exp-reset { margin-top: 22px; }
 .exp-2fa p.exp-reset-intro { margin-bottom: 10px; }
+
+/* Former style="" attributes of user2fa/parts/account_link.tpl (the profile's way to the setup page), outside the
+   .exp-2fa frame: the admin tokens where the page has them (dark values in a dark admin4), the light defaults of the
+   2FA pages elsewhere. The state "Off" of the list item variant is told apart in the warning colors (6.6:1). */
+.exp-2fa-account { display: flex; flex-wrap: wrap; gap: .4em 1em; align-items: center; justify-content: space-between; margin: 0 0 1em; padding: .7em .95em; border: 1px solid var(--a4-line, #d9dde3); border-radius: var(--a4-radius-s, 9px); background: var(--a4-soft, #f5f6f8); color: var(--a4-ink, #1f2430); }
+.exp-2fa-account .exp-2fa-account-text { margin: 0; flex: 1 1 18em; color: inherit; }
+.exp-2fa-account a.exp-2fa-account-link { display: inline-block; padding: .4em .95em; border: 1px solid var(--a4-accent-text, #9a3412); border-radius: var(--a4-radius-s, 8px); background: var(--a4-card, #fff); color: var(--a4-accent-text, #9a3412); font-weight: 650; text-decoration: none; }
+.exp-2fa-account a.exp-2fa-account-link:hover { text-decoration: underline; }
+.exp-2fa-account a.exp-2fa-account-link:focus-visible { outline: 3px solid var(--a4-ring, rgba(194, 65, 12, 0.45)); outline-offset: 2px; }
+.acc-count.exp-2fa-account-off { background: var(--a4-warn-bg, #fff3df); color: var(--a4-warn, #8a4b00); }
+
+/* Former style="" attributes of content/datatype/edit/sevenxauthentication2fa.tpl in the standard design (the 2FA
+   field of a public edit or registration form): the state line, the enrolment box, the QR code on white (a code
+   reader needs the light quiet zone in any color mode) and the key */
+.exp-2fa-field .exp-2fa-field-state { margin: 0 0 .5em; color: var(--a4-muted, #5d6573); }
+.exp-2fa-field .exp-2fa-field-totp { display: flex; flex-wrap: wrap; gap: 1em 1.5em; align-items: flex-start; padding: 1em; border: 1px solid var(--a4-line, #d9dde3); border-radius: var(--a4-radius, 10px); }
+.exp-2fa-field img.exp-2fa-field-qr { padding: 8px; background: #fff; border: 1px solid var(--a4-line, #d9dde3); border-radius: var(--a4-radius-s, 8px); }
+.exp-2fa-field .exp-2fa-field-key { flex: 1 1 14em; min-width: 0; }
+.exp-2fa-field .exp-2fa-field-key p { margin: 0 0 .3em; }
+.exp-2fa-field .exp-2fa-field-key p.exp-2fa-field-secret { margin: 0 0 1em; }
+.exp-2fa-field .exp-2fa-field-secret code { font-size: 1.05em; letter-spacing: .06em; overflow-wrap: anywhere; }
