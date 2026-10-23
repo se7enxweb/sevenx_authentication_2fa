@@ -77,15 +77,15 @@
     </message>
     <message>
         <source>Back to my account</source>
-        <translation>Wróć do mojego konta</translation>
+        <translation>Wrócić do mojego konta</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Anuluj</translation>
+        <translation>Anulować</translation>
     </message>
     <message>
         <source>Cancel and sign in again</source>
-        <translation>Anuluj i zaloguj się ponownie</translation>
+        <translation>Anulować i zalogować się ponownie</translation>
     </message>
     <message>
         <source>Confirm it is you</source>
@@ -93,7 +93,7 @@
     </message>
     <message>
         <source>Continue with %provider</source>
-        <translation>Kontynuuj przez %provider</translation>
+        <translation>Kontynuować przez %provider</translation>
     </message>
     <message>
         <source>Current code from your app</source>
@@ -129,15 +129,15 @@
     </message>
     <message>
         <source>Enter the code from your app</source>
-        <translation>Wpisz kod z aplikacji</translation>
+        <translation>Wpisać kod z aplikacji</translation>
     </message>
     <message>
         <source>Enter the code from your e-mail</source>
-        <translation>Wpisz kod z e-maila</translation>
+        <translation>Wpisać kod z e-maila</translation>
     </message>
     <message>
         <source>Enter the code the app shows</source>
-        <translation>Wpisz kod wyświetlany przez aplikację</translation>
+        <translation>Wpisać kod wyświetlany przez aplikację</translation>
     </message>
     <message>
         <source>Enter the code your authenticator app shows now to confirm this change.</source>
@@ -153,7 +153,7 @@
     </message>
     <message>
         <source>Manage</source>
-        <translation>Zarządzaj</translation>
+        <translation>Zarządzać</translation>
     </message>
     <message>
         <source>My account</source>
@@ -253,7 +253,7 @@
     </message>
     <message>
         <source>Remove the second step</source>
-        <translation>Usuń drugi krok</translation>
+        <translation>Usunąć drugi krok</translation>
     </message>
     <message>
         <source>Required</source>
@@ -265,23 +265,23 @@
     </message>
     <message>
         <source>Reset 2FA</source>
-        <translation>Resetuj 2FA</translation>
+        <translation>Zresetować 2FA</translation>
     </message>
     <message>
         <source>Reset my password</source>
-        <translation>Resetuj moje hasło</translation>
+        <translation>Zresetować moje hasło</translation>
     </message>
     <message>
         <source>Reset two-factor authentication</source>
-        <translation>Resetuj uwierzytelnianie dwuskładnikowe</translation>
+        <translation>Zresetować uwierzytelnianie dwuskładnikowe</translation>
     </message>
     <message>
         <source>Save and sign in</source>
-        <translation>Zapisz i zaloguj się</translation>
+        <translation>Zapisać i zalogować się</translation>
     </message>
     <message>
         <source>Save settings</source>
-        <translation>Zapisz ustawienia</translation>
+        <translation>Zapisać ustawienia</translation>
     </message>
     <message>
         <source>Scan the code</source>
@@ -301,11 +301,11 @@
     </message>
     <message>
         <source>Send a new code</source>
-        <translation>Wyślij nowy kod</translation>
+        <translation>Wysłać nowy kod</translation>
     </message>
     <message>
         <source>Set up a second step</source>
-        <translation>Skonfiguruj drugi krok</translation>
+        <translation>Skonfigurować drugi krok</translation>
     </message>
     <message>
         <source>Set up on</source>
@@ -317,19 +317,19 @@
     </message>
     <message>
         <source>Set up your authenticator app</source>
-        <translation>Skonfiguruj aplikację uwierzytelniającą</translation>
+        <translation>Skonfigurować aplikację uwierzytelniającą</translation>
     </message>
     <message>
         <source>Sign in again</source>
-        <translation>Zaloguj się ponownie</translation>
+        <translation>Zalogować się ponownie</translation>
     </message>
     <message>
         <source>Sign in here</source>
-        <translation>Zaloguj się tutaj</translation>
+        <translation>Zalogować się tutaj</translation>
     </message>
     <message>
         <source>Sign in with username and password</source>
-        <translation>Zaloguj się nazwą użytkownika i hasłem</translation>
+        <translation>Zalogować się nazwą użytkownika i hasłem</translation>
     </message>
     <message>
         <source>Sign-in was cancelled</source>
@@ -461,11 +461,11 @@
     </message>
     <message>
         <source>Try %provider again</source>
-        <translation>Spróbuj ponownie przez %provider</translation>
+        <translation>Spróbować ponownie przez %provider</translation>
     </message>
     <message>
         <source>Turn on</source>
-        <translation>Włącz</translation>
+        <translation>Włączyć</translation>
     </message>
     <message>
         <source>Two-Factor Authentication</source>
@@ -517,7 +517,7 @@
     </message>
     <message>
         <source>Verify and sign in</source>
-        <translation>Zweryfikuj i zaloguj się</translation>
+        <translation>Zweryfikować i zalogować się</translation>
     </message>
     <message>
         <source>Waiting for the code that confirms the authenticator app.</source>
