@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>leverandøren</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>Tiden for å sette det opp senere er ute. Sett opp et andre trinn nå for å logge inn.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Gjenopprettingskoder hører til en autentiseringsapp. Sett opp en først.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Nye gjenopprettingskoder ble laget. De gamle virker ikke lenger.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Det kunne ikke lages gjenopprettingskoder.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Bruk en gjenopprettingskode</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Gjenopprettingskode</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>En av kodene du lagret da du satte opp appen. Hver virker én gang; %count er igjen.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Logg inn med gjenopprettingskoden</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Passordet var riktig. Dette nettstedet krever et andre trinn ved innlogging for kontoen din; sett det opp nå for å fortsette.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Du kan også sette det opp senere: i %days dager til logger passordet alene deg inn.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Gjenopprettingskodene dine</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Hvis du mister telefonen, logger hver av disse kodene deg inn én gang i stedet for appens kode. Skriv dem ut eller lagre dem i en passordbehandler nå: de vises bare denne ene gangen.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Jeg har lagret dem, fortsett</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Gjenopprettingskoder igjen</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Sett opp senere</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Gjenopprettingskoder</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Engangskoder som logger deg inn når telefonen er borte. Nye koder gjør de gamle ugyldige.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Lag nye gjenopprettingskoder</translation>
+    </message>
 </context>
 </TS>

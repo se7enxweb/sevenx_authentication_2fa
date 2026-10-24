@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>de provider</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>De tijd om dit later in te stellen is voorbij. Stel nu een tweede stap in om in te loggen.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Herstelcodes horen bij een authenticator-app. Stel er eerst een in.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Er zijn nieuwe herstelcodes gemaakt. De oude werken niet meer.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Er konden geen herstelcodes worden gemaakt.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Een herstelcode gebruiken</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Herstelcode</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>Een van de codes die je bewaarde toen je de app instelde. Elke code werkt één keer; er zijn er nog %count.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Inloggen met de herstelcode</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Je wachtwoord klopte. Deze site vraagt je account om een tweede stap bij het inloggen; stel die nu in om door te gaan.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Je kunt het ook later instellen: nog %days dagen logt het wachtwoord alleen je in.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Je herstelcodes</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Als je je telefoon kwijtraakt, logt elk van deze codes je één keer in in plaats van de code van de app. Print ze of bewaar ze nu in een wachtwoordmanager: ze worden alleen deze ene keer getoond.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Ik heb ze bewaard, verder</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Herstelcodes over</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Later instellen</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Herstelcodes</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Eenmalige codes die je inloggen als je telefoon kwijt is. Nieuwe maken zorgt dat de oude niet meer werken.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Nieuwe herstelcodes maken</translation>
+    </message>
 </context>
 </TS>

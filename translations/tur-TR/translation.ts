@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>sağlayıcı</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>Daha sonra ayarlama süresi doldu. Oturum açmak için şimdi ikinci bir adım ayarlayın.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Kurtarma kodları bir kimlik doğrulama uygulamasına aittir. Önce bir tane ayarlayın.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Yeni kurtarma kodları oluşturuldu. Eskileri artık çalışmıyor.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Kurtarma kodları oluşturulamadı.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Bir kurtarma kodu kullan</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Kurtarma kodu</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>Uygulamayı ayarlarken kaydettiğiniz kodlardan biri. Her biri bir kez çalışır; %count tane kaldı.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Kurtarma koduyla oturum aç</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Parolanız doğruydu. Bu site hesabınızdan oturum açarken ikinci bir adım ister; devam etmek için şimdi ayarlayın.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Bunu daha sonra da ayarlayabilirsiniz: %days gün daha yalnızca parola oturumunuzu açar.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Kurtarma kodlarınız</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Telefonunuzu kaybederseniz bu kodların her biri, uygulamanın kodu yerine sizi bir kez oturum açtırır. Bunları yazdırın ya da şimdi bir parola yöneticisine kaydedin: yalnızca bu kez gösterilirler.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Kaydettim, devam et</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Kalan kurtarma kodları</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Daha sonra ayarla</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Kurtarma kodları</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Telefonunuz kaybolduğunda sizi oturum açtıran tek kullanımlık kodlar. Yenilerini oluşturmak eskilerini geçersiz kılar.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Yeni kurtarma kodları oluştur</translation>
+    </message>
 </context>
 </TS>

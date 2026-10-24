@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>il provider</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>Il tempo per configurarlo più tardi è scaduto. Configura ora un secondo passaggio per accedere.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>I codici di recupero appartengono a un&apos;app di autenticazione. Configurane prima una.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Sono stati creati nuovi codici di recupero. Quelli vecchi non funzionano più.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Non è stato possibile creare codici di recupero.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Usa un codice di recupero</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Codice di recupero</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>Uno dei codici che hai salvato quando hai configurato l&apos;app. Ognuno funziona una volta; ne restano %count.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Accedi con il codice di recupero</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>La password è corretta. Questo sito richiede al tuo account un secondo passaggio all&apos;accesso; configuralo ora per continuare.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Puoi anche configurarlo più tardi: per altri %days giorni la sola password ti fa accedere.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>I tuoi codici di recupero</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Se perdi il telefono, ognuno di questi codici ti fa accedere una volta al posto del codice dell&apos;app. Stampali o salvali ora in un gestore di password: vengono mostrati solo questa volta.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Li ho salvati, continua</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Codici di recupero rimasti</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Configura più tardi</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Codici di recupero</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Codici monouso che ti fanno accedere quando hai perso il telefono. Crearne di nuovi rende inutilizzabili quelli vecchi.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Crea nuovi codici di recupero</translation>
+    </message>
 </context>
 </TS>

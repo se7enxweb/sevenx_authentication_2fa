@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>dostawca</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>Czas na późniejszą konfigurację minął. Skonfiguruj drugi krok teraz, aby się zalogować.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Kody odzyskiwania należą do aplikacji uwierzytelniającej. Najpierw ją skonfiguruj.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Utworzono nowe kody odzyskiwania. Stare już nie działają.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Nie udało się utworzyć kodów odzyskiwania.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Użyć kodu odzyskiwania</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Kod odzyskiwania</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>Jeden z kodów zapisanych podczas konfiguracji aplikacji. Każdy działa raz; pozostało %count.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Zalogować się kodem odzyskiwania</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Hasło było prawidłowe. Ta witryna wymaga od Twojego konta drugiego kroku przy logowaniu; skonfiguruj go teraz, aby kontynuować.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Możesz też skonfigurować go później: jeszcze przez %days dni samo hasło Cię zaloguje.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Twoje kody odzyskiwania</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Jeśli zgubisz telefon, każdy z tych kodów zaloguje Cię raz zamiast kodu z aplikacji. Wydrukuj je lub zapisz teraz w menedżerze haseł: są pokazywane tylko ten jeden raz.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Zapisałem je, kontynuować</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Pozostałe kody odzyskiwania</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Skonfigurować później</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Kody odzyskiwania</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Jednorazowe kody, które Cię zalogują, gdy zgubisz telefon. Utworzenie nowych unieważnia stare.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Utworzyć nowe kody odzyskiwania</translation>
+    </message>
 </context>
 </TS>

@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>poskytovatel</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>Čas na pozdější nastavení vypršel. Nastavte druhý krok nyní, abyste se mohli přihlásit.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Záložní kódy patří k ověřovací aplikaci. Nejprve ji nastavte.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Byly vytvořeny nové záložní kódy. Staré už neplatí.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Záložní kódy nebylo možné vytvořit.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Použít záložní kód</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Záložní kód</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>Jeden z kódů, které jste si uložili při nastavení aplikace. Každý platí jednou; zbývá %count.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Přihlásit se záložním kódem</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Heslo bylo správné. Tento web vyžaduje od vašeho účtu při přihlášení druhý krok; nastavte jej nyní a pokračujte.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Můžete jej nastavit i později: ještě %days dní vás přihlásí samotné heslo.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Vaše záložní kódy</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Pokud ztratíte telefon, každý z těchto kódů vás jednou přihlásí místo kódu z aplikace. Vytiskněte si je nebo je nyní uložte do správce hesel: zobrazí se jen tentokrát.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Mám je uložené, pokračovat</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Zbývající záložní kódy</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Nastavit později</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Záložní kódy</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Jednorázové kódy, které vás přihlásí, když ztratíte telefon. Vytvořením nových přestanou platit staré.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Vytvořit nové záložní kódy</translation>
+    </message>
 </context>
 </TS>

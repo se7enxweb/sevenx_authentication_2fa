@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>leverantören</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>Tiden för att ställa in det senare har gått ut. Ställ in ett andra steg nu för att logga in.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Återställningskoder hör till en autentiseringsapp. Ställ in en först.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Nya återställningskoder skapades. De gamla fungerar inte längre.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Det gick inte att skapa återställningskoder.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Använd en återställningskod</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Återställningskod</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>En av koderna du sparade när du ställde in appen. Var och en fungerar en gång; %count återstår.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Logga in med återställningskoden</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Lösenordet var rätt. Den här webbplatsen kräver ett andra steg vid inloggning för ditt konto; ställ in det nu för att fortsätta.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Du kan också ställa in det senare: i %days dagar till loggar lösenordet ensamt in dig.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Dina återställningskoder</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Om du tappar bort telefonen loggar var och en av de här koderna in dig en gång i stället för appens kod. Skriv ut dem eller spara dem i en lösenordshanterare nu: de visas bara den här gången.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Jag har sparat dem, fortsätt</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Återstående återställningskoder</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Ställ in senare</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Återställningskoder</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Engångskoder som loggar in dig när telefonen är borta. Nya koder gör de gamla ogiltiga.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Skapa nya återställningskoder</translation>
+    </message>
 </context>
 </TS>

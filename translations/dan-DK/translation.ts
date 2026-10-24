@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>udbyderen</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>Tiden til at konfigurere det senere er udløbet. Konfigurer et andet trin nu for at logge ind.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Gendannelseskoder hører til en godkendelsesapp. Konfigurer en først.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Der blev lavet nye gendannelseskoder. De gamle virker ikke længere.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Der kunne ikke laves gendannelseskoder.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Brug en gendannelseskode</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Gendannelseskode</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>En af de koder, du gemte, da du konfigurerede appen. Hver virker én gang; %count er tilbage.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Log ind med gendannelseskoden</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Din adgangskode var korrekt. Dette site kræver et andet trin ved login for din konto; konfigurer det nu for at fortsætte.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Du kan også konfigurere det senere: i %days dage mere logger adgangskoden alene dig ind.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Dine gendannelseskoder</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Hvis du mister din telefon, logger hver af disse koder dig ind én gang i stedet for appens kode. Udskriv dem, eller gem dem i en adgangskodeadministrator nu: de vises kun denne ene gang.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Jeg har gemt dem, fortsæt</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Gendannelseskoder tilbage</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Konfigurer senere</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Gendannelseskoder</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Engangskoder, der logger dig ind, når din telefon er væk. Nye koder gør de gamle ugyldige.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Lav nye gendannelseskoder</translation>
+    </message>
 </context>
 </TS>

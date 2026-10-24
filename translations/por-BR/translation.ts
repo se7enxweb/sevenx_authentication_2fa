@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>o provedor</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>O prazo para configurar depois acabou. Configure uma segunda etapa agora para entrar.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Códigos de recuperação pertencem a um aplicativo autenticador. Configure um primeiro.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Novos códigos de recuperação foram criados. Os antigos não funcionam mais.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Não foi possível criar códigos de recuperação.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Usar um código de recuperação</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Código de recuperação</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>Um dos códigos que você guardou ao configurar o aplicativo. Cada um funciona uma vez; restam %count.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Entrar com o código de recuperação</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Sua senha estava correta. Este site pede à sua conta uma segunda etapa no login; configure-a agora para continuar.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Você também pode configurá-la depois: por mais %days dias a senha sozinha ainda faz você entrar.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Seus códigos de recuperação</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Se você perder o celular, cada um destes códigos faz você entrar uma vez no lugar do código do aplicativo. Imprima-os ou guarde-os agora em um gerenciador de senhas: eles são mostrados só desta vez.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Já os guardei, continuar</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Códigos de recuperação restantes</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Configurar depois</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Códigos de recuperação</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Códigos de uso único que fazem você entrar quando perde o celular. Criar novos invalida os antigos.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Criar novos códigos de recuperação</translation>
+    </message>
 </context>
 </TS>

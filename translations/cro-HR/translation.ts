@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>pružatelj usluge</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>Vrijeme za kasnije postavljanje je isteklo. Postavite drugi korak sada da biste se prijavili.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Kodovi za oporavak pripadaju aplikaciji za autentifikaciju. Najprije je postavite.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Izrađeni su novi kodovi za oporavak. Stari više ne vrijede.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Nije bilo moguće izraditi kodove za oporavak.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Upotrijebi kod za oporavak</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Kod za oporavak</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>Jedan od kodova koje ste spremili pri postavljanju aplikacije. Svaki vrijedi jednom; preostalo ih je %count.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Prijavi se kodom za oporavak</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Lozinka je ispravna. Ovo web-mjesto od vašeg računa traži drugi korak pri prijavi; postavite ga sada da biste nastavili.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Možete ga postaviti i kasnije: još %days dana sama lozinka vas prijavljuje.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Vaši kodovi za oporavak</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Ako izgubite telefon, svaki od ovih kodova prijavljuje vas jednom umjesto koda aplikacije. Ispišite ih ili ih sada spremite u upravitelj lozinki: prikazuju se samo ovaj put.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Spremio sam ih, nastavi</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Preostali kodovi za oporavak</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Postavi kasnije</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Kodovi za oporavak</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Jednokratni kodovi koji vas prijavljuju kad izgubite telefon. Izrada novih poništava stare.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Izradi nove kodove za oporavak</translation>
+    </message>
 </context>
 </TS>

@@ -559,5 +559,77 @@
         <source>the provider</source>
         <translation>der Anmeldedienst</translation>
     </message>
+    <message>
+        <source>The time to set this up later has run out. Set up a second step now to sign in.</source>
+        <translation>Die Zeit, dies später einzurichten, ist abgelaufen. Richten Sie jetzt einen zweiten Schritt ein, um sich anzumelden.</translation>
+    </message>
+    <message>
+        <source>Recovery codes belong to an authenticator app. Set one up first.</source>
+        <translation>Wiederherstellungscodes gehören zu einer Authenticator-App. Richten Sie zuerst eine ein.</translation>
+    </message>
+    <message>
+        <source>New recovery codes were made. The old ones no longer work.</source>
+        <translation>Neue Wiederherstellungscodes wurden erstellt. Die alten gelten nicht mehr.</translation>
+    </message>
+    <message>
+        <source>No recovery codes could be made.</source>
+        <translation>Es konnten keine Wiederherstellungscodes erstellt werden.</translation>
+    </message>
+    <message>
+        <source>Use a recovery code</source>
+        <translation>Einen Wiederherstellungscode verwenden</translation>
+    </message>
+    <message>
+        <source>Recovery code</source>
+        <translation>Wiederherstellungscode</translation>
+    </message>
+    <message>
+        <source>One of the codes you saved when you set up the app. Each works once; %count are left.</source>
+        <translation>Einer der Codes, die Sie beim Einrichten der App gespeichert haben. Jeder gilt einmal; %count sind übrig.</translation>
+    </message>
+    <message>
+        <source>Sign in with the recovery code</source>
+        <translation>Mit dem Wiederherstellungscode anmelden</translation>
+    </message>
+    <message>
+        <source>Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.</source>
+        <translation>Ihr Passwort war richtig. Diese Website verlangt von Ihrem Konto einen zweiten Schritt bei der Anmeldung; richten Sie ihn jetzt ein, um fortzufahren.</translation>
+    </message>
+    <message>
+        <source>You may also set it up later: for %days more days the password alone still signs you in.</source>
+        <translation>Sie können ihn auch später einrichten: noch %days Tage meldet Sie das Passwort allein an.</translation>
+    </message>
+    <message>
+        <source>Your recovery codes</source>
+        <translation>Ihre Wiederherstellungscodes</translation>
+    </message>
+    <message>
+        <source>If you lose your phone, each of these codes signs you in once in place of the app&apos;s code. Print them or keep them in a password manager now: they are shown only this once.</source>
+        <translation>Wenn Sie Ihr Telefon verlieren, meldet jeder dieser Codes Sie einmal anstelle des App-Codes an. Drucken Sie sie aus oder legen Sie sie jetzt in einem Passwortmanager ab: Sie werden nur dieses eine Mal angezeigt.</translation>
+    </message>
+    <message>
+        <source>I have saved them, continue</source>
+        <translation>Ich habe sie gespeichert, weiter</translation>
+    </message>
+    <message>
+        <source>Recovery codes left</source>
+        <translation>Verbleibende Wiederherstellungscodes</translation>
+    </message>
+    <message>
+        <source>Set up later</source>
+        <translation>Später einrichten</translation>
+    </message>
+    <message>
+        <source>Recovery codes</source>
+        <translation>Wiederherstellungscodes</translation>
+    </message>
+    <message>
+        <source>One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.</source>
+        <translation>Einmal-Codes, die Sie anmelden, wenn Ihr Telefon verloren ist. Neue zu erstellen macht die alten ungültig.</translation>
+    </message>
+    <message>
+        <source>Make new recovery codes</source>
+        <translation>Neue Wiederherstellungscodes erstellen</translation>
+    </message>
 </context>
 </TS>
