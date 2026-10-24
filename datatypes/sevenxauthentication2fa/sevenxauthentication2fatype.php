@@ -117,14 +117,26 @@ class sevenxAuthentication2faType extends eZDataType
                 return new sevenxAuthentication2fa( 'totp', $secret, false );
             }
 
-            return new sevenxAuthentication2fa( 'totp', $secret, true, null, $step );
+            $confirmed = new sevenxAuthentication2fa( 'totp', $secret, true, null, $step );
+            // app passwords stay with the account while it has a working second step
+            if ( $current->isActive() )
+                $confirmed->setAppPasswords( $current->appPasswords() );
+            return $confirmed;
         }
         elseif ( $method === 'email' )
         {
-            return new sevenxAuthentication2fa( 'email', '', true );
+            // e-mail codes that are on stay as they are (saving the form again keeps the app passwords)
+            if ( $current->isActive() && $current->method() === 'email' )
+                return $current;
+            $email = new sevenxAuthentication2fa( 'email', '', true );
+            if ( $current->isActive() )
+                $email->setAppPasswords( $current->appPasswords() );
+            return $email;
         }
         else
         {
+            // the app passwords belonged to the second step: they end with it
+            $helper->auditDroppedAppPasswords( (int)$contentObjectAttribute->attribute( 'contentobject_id' ), $current, 'second_step_removed' );
             return new sevenxAuthentication2fa();
         }
     }

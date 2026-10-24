@@ -39,6 +39,12 @@ installations with minimal dependencies, while remaining compatible with PHP 8.5
   limited per sign-in and count as failed logins of the account; e-mail codes
   are kept hashed; TOTP secrets can be encrypted at rest; every redirect target
   passes the safe redirect rules. See [Security](#security).
+- **The other sign-in paths** — on Exponential 6.0.15 and later REST with
+  basic authentication, WebDAV, SOAP and the expservices login refuse a
+  password alone for an enforced account; it uses an **app password** (made,
+  shown once and revoked on `user2fa/setup`, stored hashed, limited to the
+  paths chosen) or, on the expservices login, its authenticator code. See
+  [Sign-ins outside the web login form](#sign-ins-outside-the-web-login-form-app-passwords).
 - **On-model pages** — the second step, setup, social login answers and the
   2FA field are drawn in the look of the admin (admin4 light and dark, admin,
   Admin UI) and of the media site design. See `doc/two-factor-pages.md`.
@@ -173,14 +179,71 @@ php extension/sevenx_authentication_2fa/bin/php/sevenx2fauser.php --login=<login
 written only to that file (mode 0600), for the accounts of automated checks
 that compute their codes from it. Never use it for a person's account.
 
-### Sign-ins that do not ask for the second step
+### Sign-ins outside the web login form: app passwords
 
-The second step belongs to the sign-in form (`user/login`). These ask for a
-password only: WebDAV (the standard login handler), the REST API's basic
-authentication, and code that calls `eZUser::loginUser()` directly. Keep them
-off, or limited to accounts that need no second step, where it is enforced.
-A session that was signed in before enforcement was switched on stays signed
-in until it ends; the second step is asked at the next sign-in.
+The login handler asks for the second step in the sign-in form (`user/login`).
+On Exponential 6.0.15 and later the kernel asks this extension on the other
+sign-in paths too (`site.ini [SignInSecondFactorSettings] Handlers[]`, which
+`settings/site.ini.append.php` fills with `sevenxAuthentication2faSignIn`):
+the REST interface with basic authentication (`rest`), WebDAV (`webdav`),
+SOAP (`soap`) and the expservices login (`expservices`).
+
+For an account `Enforce2FA` applies to, a password alone is refused there
+(REST `401` `second_factor_required`, or `403` `second_factor_setup_required`
+while it has no second step; WebDAV and SOAP `401` with `WWW-Authenticate` and
+`X-Exp-Sign-In-Refused`; expservices `401` with `error.reason`). Such an
+account signs in with:
+
+- an **app password** on REST, WebDAV and SOAP: made by the user on
+  `user2fa/setup` (section "App passwords", confirmed with a current code),
+  shown once, stored only as a salted hash in the account's two-factor field,
+  limited to the paths ticked, revoked there at any time, and all revoked when
+  the second step is removed or reset. It never signs in through the web
+  login form or the expservices login and never makes a session;
+- the **current authenticator code** on the expservices login (POST field
+  `otp`, or the header `X-Exp-OTP`). Each code works once; `[Security]
+  MaxAttempts` wrong ones lock it for `CodeLockSeconds`;
+- on REST also a personal API key or an OAuth token (the OAuth authorization
+  code is issued after the web login, with the second step).
+
+```ini
+# settings/override/sevenxauthentication2fa.ini.append.php (the defaults)
+[OtherSignInPaths]
+Guard=enabled
+GuardedChannels[]
+GuardedChannels[]=rest
+GuardedChannels[]=webdav
+GuardedChannels[]=soap
+GuardedChannels[]=expservices
+GuardOptedIn=disabled
+CodeChannels[]
+CodeChannels[]=expservices
+CodeLockSeconds=900
+
+[AppPasswords]
+AppPasswords=enabled
+Channels[]
+Channels[]=rest
+Channels[]=webdav
+Channels[]=soap
+MaxPerUser=10
+ExpiryDays=365
+LastUsedInterval=900
+```
+
+Accounts `Enforce2FA` does not apply to (and exempt ones) are not touched;
+`GuardOptedIn=enabled` also guards accounts that chose a second step
+themselves. Console commands are never asked. Refusals and app passwords are
+recorded in the kernel's audit trail (`access.user.second_factor.refused`,
+`access.user.app_password.create`, `.revoke`, `.use`) and in
+`var/log/auth.log`. Guide in the kernel:
+`doc/eng-us/features/6.0/second-factor-on-other-sign-in-paths.md`.
+
+On a kernel older than 6.0.15 these paths still ask for a password only, as
+does code that calls `eZUser::loginUser()` directly: keep them off there, or
+limited to accounts that need no second step. A session that was signed in
+before enforcement was switched on stays signed in until it ends; the second
+step is asked at the next sign-in.
 
 ### Role policies and permissions
 
@@ -366,7 +429,8 @@ and from the filesystem cache `var/site/cache/sevenx_2fa_pending/`.
 
 The logic that needs no database has PHPUnit tests (RFC 6238 vectors, the time
 window, replay, attempt and resend limits, e-mail code hashing, the redirect
-rules, secret encryption):
+rules, secret encryption, the decisions on the other sign-in paths, the code
+lock and app passwords):
 
 ```bash
 php vendor/bin/phpunit --no-configuration \

@@ -13,6 +13,14 @@ ExtensionDirectory[]=sevenx_authentication_2fa
 # If you keep LoginHandler[]=standard, the standard handler will log the user in
 # before the 2FA challenge can run.
 
+[SignInSecondFactorSettings]
+# The kernel asks this class on the sign-in paths outside the web login form (REST with
+# basic authentication, WebDAV, SOAP, the expservices login): whether a password alone
+# is enough, and whether a secret is an app password (sevenxauthentication2fa.ini
+# [OtherSignInPaths], [AppPasswords]). A kernel older than 6.0.15 has no such setting
+# and ignores it.
+Handlers[]=sevenxAuthentication2faSignIn
+
 [SiteAccessSettings]
 # The second step happens before the user is signed in, so a siteaccess with
 # RequireUserLogin=true (an administration interface) has to let it through.

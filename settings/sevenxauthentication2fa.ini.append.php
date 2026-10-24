@@ -110,6 +110,76 @@ SetupTTL=900
 # one) on the setup page with a current code. 0: none. At most 20.
 RecoveryCodes=10
 
+[OtherSignInPaths]
+# The second step on the sign-in paths outside the web login form, which check a
+# password themselves: rest (the REST interface with basic authentication), webdav,
+# soap and expservices (the login of the remote services). The kernel asks this
+# extension there (site.ini [SignInSecondFactorSettings] Handlers[]).
+#
+# For an account Enforce2FA applies to, a password alone is refused on these paths:
+# REST answers 401 second_factor_required (403 second_factor_setup_required while the
+# account has no second step yet), WebDAV and SOAP 401 with WWW-Authenticate and the
+# reason in X-Exp-Sign-In-Refused, the expservices login 401 with error.reason. The
+# account signs in there with an app password ([AppPasswords]) or, where CodeChannels[]
+# allows it, with the current code of its authenticator app. Accounts Enforce2FA does
+# not apply to, and exempt ones (ExemptGroups[], ExemptEmailDomains[]), are not
+# touched. Console commands are never asked. Every refusal is in the audit trail
+# (access.user.second_factor.refused) and in var/log/auth.log.
+#
+# disabled: the password alone signs in on these paths as before (not recommended).
+Guard=enabled
+
+# The paths guarded. An empty list guards none.
+GuardedChannels[]
+GuardedChannels[]=rest
+GuardedChannels[]=webdav
+GuardedChannels[]=soap
+GuardedChannels[]=expservices
+
+# Also refuse a password alone for accounts that set up a second step themselves
+# (Enforce2FA does not apply to them): enabled | disabled
+GuardOptedIn=disabled
+
+# The paths on which the current code of an authenticator app counts as the second
+# step: the POST field otp or the request header site.ini [SignInSecondFactorSettings]
+# CodeHeader (X-Exp-OTP). Each code works once; [Security] MaxAttempts wrong codes lock
+# the code for CodeLockSeconds. The expservices login makes a session, which is why it
+# takes a code and not an app password. rest, webdav and soap send their credentials
+# with every request, where a code that works once fits badly: use app passwords there.
+CodeChannels[]
+CodeChannels[]=expservices
+
+# Seconds the authenticator code stays locked after MaxAttempts wrong codes.
+CodeLockSeconds=900
+
+[AppPasswords]
+# App passwords: a password for one client (a WebDAV drive, a script, an app), made by
+# the user on the two-step sign-in page (user2fa/setup) and shown once. Sent in place of
+# the account's password, it signs in on the paths it was made for, without the second
+# step. Only its salted hash is stored (in the account's two-factor field); the user
+# revokes it there, and removing or resetting the second step revokes them all. Making
+# one asks for the current code of the authenticator app. Making, revoking and using one
+# is in the audit trail (access.user.app_password.create, .revoke, .use).
+#
+# enabled | disabled (disabled: none are made, and existing ones stop working)
+AppPasswords=enabled
+
+# The paths an app password may be made for. Only rest, webdav and soap are possible:
+# they sign in one request at a time and never make a session the web interface takes.
+Channels[]
+Channels[]=rest
+Channels[]=webdav
+Channels[]=soap
+
+# How many app passwords a user may have (at most 50).
+MaxPerUser=10
+
+# Days a new app password works; 0: until it is revoked.
+ExpiryDays=365
+
+# Seconds between two writes of "last used" (and its audit record) of an app password.
+LastUsedInterval=900
+
 [SocialLogin]
 # Master switch for OAuth/social login handlers.
 Enabled=disabled

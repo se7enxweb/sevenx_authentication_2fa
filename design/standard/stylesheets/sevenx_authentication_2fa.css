@@ -239,3 +239,17 @@ html[data-a4-theme="dark"] body.a4-login-page .exp-2fa .exp-2fa-icon { backgroun
 /* Recovery codes, shown once after an authenticator was set up (user2fa/setup) */
 .exp-2fa .exp-recovery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px 14px; margin: 10px 0 14px; padding: 12px 14px; list-style: none; border: 1px dashed var(--tf-field-line); border-radius: 8px; background: var(--tf-soft); }
 .exp-2fa .exp-recovery li { margin: 0; font: 600 15px/1.6 var(--tf-mono); letter-spacing: .06em; color: var(--tf-ink); user-select: all; }
+
+/* App passwords for REST, WebDAV and SOAP clients (user2fa/setup): the list, the new one shown once, the form */
+.exp-2fa .exp-apppw-list { margin: 10px 0 12px; padding: 0; list-style: none; border-top: 1px solid var(--tf-line); }
+.exp-2fa .exp-apppw { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; margin: 0; padding: 10px 0; border-bottom: 1px solid var(--tf-line); }
+.exp-2fa .exp-apppw > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.exp-2fa .exp-apppw-name { font-weight: 650; color: var(--tf-ink); overflow-wrap: anywhere; }
+.exp-2fa .exp-apppw-meta { font-size: 12.5px; color: var(--tf-muted); }
+.exp-2fa .exp-apppw-new { margin: 6px 0 10px; padding: 12px 14px; border: 1px dashed var(--tf-field-line); border-radius: 8px; background: var(--tf-soft); }
+.exp-2fa .exp-apppw-new code { font: 600 17px/1.6 var(--tf-mono); letter-spacing: .06em; color: var(--tf-ink); user-select: all; }
+.exp-2fa .exp-apppw-scopes { display: flex; flex-wrap: wrap; gap: 6px 18px; min-width: 0; margin: 12px 0 0; padding: 0; border: 0; }
+.exp-2fa .exp-apppw-scopes > legend { float: left; width: 100%; margin: 0 0 4px; padding: 0; font-weight: 600; color: var(--tf-ink); }
+.exp-2fa .exp-apppw-scopes label { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; color: var(--tf-ink); }
+.exp-2fa details.exp-confirm.is-neutral { border-color: var(--tf-line); }
+.exp-2fa details.exp-confirm.is-neutral > summary { color: var(--tf-ink); }

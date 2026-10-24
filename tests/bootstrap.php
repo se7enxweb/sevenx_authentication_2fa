@@ -21,5 +21,17 @@ require_once $checkout . '/classes/sevenxauthentication2facrypto.php';
 require_once $checkout . '/classes/sevenxauthentication2fa.php';
 require_once $checkout . '/classes/sevenxauthentication2fapolicy.php';
 
+// The kernel's interface of the sign-in paths outside the web login form (Exponential 6.0.15), declared here as the
+// kernel declares it when the tests run without a kernel, so the handler's own rules are tested too
+if ( !interface_exists( 'expSignInSecondFactorHandler' ) )
+{
+    interface expSignInSecondFactorHandler
+    {
+        public function checkSignIn( eZUser $user, $channel, $code );
+        public function appPasswordUser( $login, $secret, $channel );
+    }
+}
+require_once $checkout . '/classes/sevenxauthentication2fasignin.php';
+
 sevenxAuthentication2faRedirect::$useKernelRules = false;
 sevenxAuthentication2faCrypto::setKey( '' );

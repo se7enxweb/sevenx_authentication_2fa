@@ -243,6 +243,97 @@ class sevenxAuthentication2faHelper
     }
 
     /**
+     * The settings of the sign-in paths outside the web login form ([OtherSignInPaths]): whether a path is guarded,
+     * whether accounts that chose a second step themselves are guarded too, on which paths an authenticator code
+     * counts, and how many wrong codes lock it for how long. Missing settings mean the secure default: every path
+     * guarded, codes only on the expservices login.
+     * @return array guard, guarded (channels), opted_in, code_channels, code_max_attempts, code_lock_seconds
+     */
+    public function otherPathSettings()
+    {
+        $has = function ( $variable ) {
+            return $this->ini && $this->ini->hasVariable( 'OtherSignInPaths', $variable );
+        };
+        $guard = $has( 'Guard' ) ? strtolower( $this->stringSetting( 'OtherSignInPaths', 'Guard' ) ) !== 'disabled' : true;
+        $guarded = $has( 'GuardedChannels' )
+            ? sevenxAuthentication2faPolicy::channelList( $this->arraySetting( 'OtherSignInPaths', 'GuardedChannels' ) )
+            : sevenxAuthentication2faPolicy::CHANNELS;
+        $codes = $has( 'CodeChannels' )
+            ? sevenxAuthentication2faPolicy::channelList( $this->arraySetting( 'OtherSignInPaths', 'CodeChannels' ) )
+            : array( 'expservices' );
+        return array(
+            'guard' => $guard,
+            'guarded' => $guarded,
+            'opted_in' => strtolower( $this->stringSetting( 'OtherSignInPaths', 'GuardOptedIn' ) ) === 'enabled',
+            'code_channels' => $codes,
+            'code_max_attempts' => max( 1, $this->intSetting( 'Security', 'MaxAttempts', 5 ) ),
+            'code_lock_seconds' => max( 60, $this->intSetting( 'OtherSignInPaths', 'CodeLockSeconds', 900 ) ),
+        );
+    }
+
+    /**
+     * The settings of app passwords ([AppPasswords]): on or off, the paths they may be made for (never more than
+     * rest, webdav and soap), how many a user may have, for how many days a new one works (0: until revoked) and how
+     * often "last used" is written.
+     * @return array enabled, channels, max, expiry_days, last_used_interval
+     */
+    public function appPasswordSettings()
+    {
+        $hasChannels = $this->ini && $this->ini->hasVariable( 'AppPasswords', 'Channels' );
+        $enabled = $this->ini && $this->ini->hasVariable( 'AppPasswords', 'AppPasswords' )
+            ? strtolower( $this->stringSetting( 'AppPasswords', 'AppPasswords' ) ) !== 'disabled' : true;
+        return array(
+            'enabled' => $enabled,
+            'channels' => $hasChannels
+                ? sevenxAuthentication2faPolicy::channelList( $this->arraySetting( 'AppPasswords', 'Channels' ), sevenxAuthentication2faPolicy::APP_PASSWORD_CHANNELS )
+                : sevenxAuthentication2faPolicy::APP_PASSWORD_CHANNELS,
+            'max' => max( 0, min( 50, $this->intSetting( 'AppPasswords', 'MaxPerUser', 10 ) ) ),
+            'expiry_days' => max( 0, min( 3650, $this->intSetting( 'AppPasswords', 'ExpiryDays', 365 ) ) ),
+            'last_used_interval' => max( 0, $this->intSetting( 'AppPasswords', 'LastUsedInterval', 900 ) ),
+        );
+    }
+
+    /**
+     * Record an app password event in the kernel's audit trail (expSignInSecondFactor::audit()) and in auth.log.
+     * @param string $event create, revoke, use
+     * @param eZUser $user
+     * @param array $entry the stored entry (only its description is recorded, never its salt or hash)
+     * @param array $extra
+     */
+    public static function auditAppPassword( $event, eZUser $user, array $entry, array $extra = array() )
+    {
+        $described = sevenxAuthentication2faPolicy::describeAppPassword( $entry, time() );
+        unset( $described['expired'] );
+        self::authLog( '2fa_app_password_' . $event, 'id=' . $described['id'] . ' channels=' . implode( ',', $described['channels'] ),
+                       (int)$user->attribute( 'contentobject_id' ) );
+        if ( !class_exists( 'expSignInSecondFactor' ) )
+            return;
+        $names = array( 'create' => expSignInSecondFactor::AUDIT_APP_PASSWORD_CREATE,
+                        'revoke' => expSignInSecondFactor::AUDIT_APP_PASSWORD_REVOKE,
+                        'use' => expSignInSecondFactor::AUDIT_APP_PASSWORD_USE );
+        if ( isset( $names[$event] ) )
+            expSignInSecondFactor::audit( $names[$event], $user, array_merge( $described, $extra ) );
+    }
+
+    /**
+     * Drop every app password of a configuration (the second step was removed or reset: they belonged to it) and
+     * record each as revoked.
+     * @param int $userID
+     * @param sevenxAuthentication2fa|null $old the configuration they were in
+     * @param string $reason
+     */
+    public function auditDroppedAppPasswords( $userID, $old, $reason )
+    {
+        if ( !$old instanceof sevenxAuthentication2fa || !$old->appPasswords() )
+            return;
+        $user = eZUser::fetch( (int)$userID );
+        if ( !$user instanceof eZUser )
+            return;
+        foreach ( $old->appPasswords() as $entry )
+            self::auditAppPassword( 'revoke', $user, $entry, array( 'reason' => (string)$reason ) );
+    }
+
+    /**
      * [Security] RecoveryCodes: how many recovery codes an authenticator gets (0: none).
      * @return int
      */

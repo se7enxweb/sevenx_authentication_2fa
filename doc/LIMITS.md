@@ -70,6 +70,18 @@ Review these before deploying the extension in production.
 
 ## Functional limitations
 
+- **App passwords live in the account's two-factor field.** Like the recovery
+  codes, they are stored in the current version of the user object. An account
+  edit that was opened as a draft before an app password was made or revoked
+  and is published afterwards writes back the list the draft started with.
+  Make and revoke app passwords on `user2fa/setup` while no edit of the account
+  is open. Without the two-factor field in the user class there are no app
+  passwords at all.
+
+- **The other sign-in paths need Exponential 6.0.15.** Older kernels do not ask
+  the extension on REST basic authentication, WebDAV, SOAP or the expservices
+  login, so a password alone still signs in there.
+
 - **OAuth providers that require `access_token` as a query parameter may not work
   out of the box.** The default `eZOAuthUser::fetchUserInfo()` sends the token in
   an `Authorization: Bearer` header. Providers such as Instagram Basic Display

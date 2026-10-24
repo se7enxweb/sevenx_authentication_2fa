@@ -84,3 +84,13 @@
 /* Recovery codes, shown once after an authenticator was set up (user2fa/setup) */
 .tfa-m .tfa-recovery { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: .4rem 1rem; margin: .75rem 0 1rem; padding: .75rem 1rem; list-style: none; background: var(--tfa-soft); border: 1px dashed var(--tfa-line); }
 .tfa-m .tfa-recovery li { margin: 0; font: 700 1rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .06em; color: var(--tfa-ink); user-select: all; }
+
+/* App passwords for REST, WebDAV and SOAP clients (user2fa/setup) */
+.tfa-m .tfa-apppw-list { margin: .75rem 0 1rem; padding: 0; list-style: none; border-top: 1px solid var(--tfa-line); }
+.tfa-m .tfa-apppw-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; padding: .75rem 0; border-bottom: 1px solid var(--tfa-line); }
+.tfa-m .tfa-apppw-list li > span { min-width: 0; overflow-wrap: anywhere; }
+.tfa-m .tfa-apppw-list small { color: var(--tfa-muted); }
+.tfa-m .tfa-apppw-scopes { border: 0; padding: 0; }
+.tfa-m .tfa-apppw-scopes label { display: inline-flex; align-items: center; gap: .4rem; margin: 0 1.25rem .25rem 0; font-weight: 400; }
+.tfa-m details.tfa-confirm.tfa-neutral > summary { color: var(--tfa-ink); }
+.tfa-m details.tfa-confirm.tfa-neutral > summary::-webkit-details-marker { color: var(--tfa-ink); }

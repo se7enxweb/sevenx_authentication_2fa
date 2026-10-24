@@ -95,6 +95,32 @@ Steps for an existing site:
 Locked out (no phone, no recovery code): `sevenx2fauser.php --login=<login> --reset`
 on the server. See README.md, "Recovery codes and a lost phone".
 
+### REST, WebDAV, SOAP and the expservices login
+
+On Exponential 6.0.15 and later the extension's `settings/site.ini.append.php`
+registers `sevenxAuthentication2faSignIn` in `site.ini
+[SignInSecondFactorSettings] Handlers[]`. With `Enforce2FA` on, the accounts
+it applies to can no longer sign in with their password alone through REST
+basic authentication, WebDAV, SOAP or the expservices login. Before switching
+it on (or updating to this version on a site where it is on):
+
+1. List the clients that sign in as an enforced account through those paths
+   (WebDAV drives, scripts, mobile apps, monitoring).
+2. Give each one an app password: the account owner opens `/user2fa/setup`,
+   section "App passwords", names it, ticks REST, WebDAV or SOAP and confirms
+   with a current code; the client then uses it in place of the password.
+   REST clients may use a personal API key or OAuth instead; expservices
+   clients send the field `otp` with the authenticator code.
+3. Accounts of automated checks that must keep a password-only sign-in are
+   exempted (`ExemptEmailDomains[]`, `ExemptGroups[]`), as for the web login.
+4. Clear the INI cache and reload PHP (PHP-FPM, and restart Exponential
+   Velocity, whose workers keep the settings and classes they started with).
+
+The settings are `[OtherSignInPaths]` and `[AppPasswords]` in
+`sevenxauthentication2fa.ini` (see README.md, "Sign-ins outside the web login
+form"). `[OtherSignInPaths] Guard=disabled` restores the old behaviour; it is
+not recommended.
+
 ### E-mail OTP behaviour
 
 The e-mail OTP body is rendered from:

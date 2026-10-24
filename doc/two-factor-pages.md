@@ -19,7 +19,11 @@ ordinary pages of the site.
 
 Form fields and button names are fixed by the views: `Code`, `VerifyButton`,
 `ResendButton`; `Method` (`totp`, `email`, `disabled`), `Code`, `Secret`,
-`SetupButton`, `ResetButton`, `RecoveryButton`, `LaterButton`. Every page works without JavaScript; the only
+`SetupButton`, `ResetButton`, `RecoveryButton`, `LaterButton`; the app passwords of `user2fa/setup`
+(`$app_passwords_enabled`, `$app_passwords`, `$app_password_channels`, `$app_passwords_max`,
+`$app_password_expiry_days`, a new one once in `$new_app_password` with `$new_app_password_name`):
+`AppPasswordCreateButton` with `AppPasswordName`, `AppPasswordChannels[]` and `Code`, `AppPasswordRevokeButton` with
+`AppPasswordID`. Every page works without JavaScript; the only
 script hides the enrolment while another method is chosen.
 
 ## Where the templates live

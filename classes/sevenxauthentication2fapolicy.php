@@ -223,4 +223,291 @@ class sevenxAuthentication2faPolicy
     {
         return is_array( $stored ) && isset( $stored['hashes'] ) && is_array( $stored['hashes'] ) ? count( $stored['hashes'] ) : 0;
     }
+
+    // ------------------------------------------------------------------------------------------------------------
+    // Sign-in paths outside the web login form ([OtherSignInPaths], [AppPasswords]; sevenxAuthentication2faSignIn)
+    // ------------------------------------------------------------------------------------------------------------
+
+    /** The channels the kernel asks about (expSignInSecondFactor::CHANNEL_*) */
+    const CHANNELS = array( 'rest', 'webdav', 'soap', 'expservices' );
+
+    /**
+     * The channels an app password may ever be made for: those that sign in one request at a time and never make a
+     * session the web interface would accept. The expservices login makes such a session, so it takes the code of
+     * the authenticator app instead.
+     */
+    const APP_PASSWORD_CHANNELS = array( 'rest', 'webdav', 'soap' );
+
+    const REASON_REQUIRED = 'second_factor_required';
+    const REASON_INVALID = 'second_factor_invalid';
+    const REASON_SETUP = 'second_factor_setup_required';
+
+    /** Characters of an app password: lower case, no 0/o, 1/i/l (read from a screen and typed into a client) */
+    const APP_PASSWORD_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
+
+    /** Length of an app password without its dashes (24 characters of 31: about 119 bits) */
+    const APP_PASSWORD_LENGTH = 24;
+
+    /** Names are cut to this length */
+    const APP_PASSWORD_NAME_LENGTH = 60;
+
+    /**
+     * Whether a password that was right is enough on a path outside the web login form.
+     *
+     * @param bool $guarded the path is guarded ([OtherSignInPaths] Guard, GuardedChannels[])
+     * @param bool $enforced Enforce2FA applies to the account (EnforcedGroups[], ExemptGroups[], ExemptEmailDomains[])
+     * @param bool $optedIn the account set up a second step of its own and GuardOptedIn is enabled
+     * @param string $method the account's working second step: totp, email or disabled
+     * @param bool $codeAccepted the path takes the code of an authenticator app (CodeChannels[])
+     * @param string|null $code the code the request carries
+     * @param bool|null $codeMatches whether that code was right (null: not checked)
+     * @return string|null null: allowed; else the reason of the refusal
+     */
+    public static function otherPathDecision( $guarded, $enforced, $optedIn, $method, $codeAccepted, $code, $codeMatches )
+    {
+        if ( !$guarded || ( !$enforced && !$optedIn ) )
+            return null;
+        if ( !in_array( $method, array( 'totp', 'email' ), true ) )
+            return self::REASON_SETUP;
+        if ( $code === null || trim( (string)$code ) === '' )
+            return self::REASON_REQUIRED;
+        if ( !$codeAccepted || $method !== 'totp' )
+            return self::REASON_INVALID;
+        return $codeMatches === true ? null : self::REASON_INVALID;
+    }
+
+    /**
+     * Whether wrong codes sent on the paths outside the web login form keep the code locked now: $max wrong codes
+     * within $lockSeconds of the first one lock it until $lockSeconds after that first one. (The account's own count
+     * of failed sign-ins cannot do this here: each right password before a code resets it.)
+     *
+     * @param array|null $failures count, since
+     * @param int $max
+     * @param int $lockSeconds
+     * @param int $now
+     * @return bool
+     */
+    public static function codeLocked( $failures, $max, $lockSeconds, $now )
+    {
+        if ( !is_array( $failures ) || !isset( $failures['count'], $failures['since'] ) )
+            return false;
+        if ( (int)$now - (int)$failures['since'] >= (int)$lockSeconds )
+            return false;
+        return (int)$failures['count'] >= max( 1, (int)$max );
+    }
+
+    /**
+     * The failures after one more wrong code: a new count when the last series is over.
+     *
+     * @param array|null $failures
+     * @param int $lockSeconds
+     * @param int $now
+     * @return array count, since
+     */
+    public static function codeFailed( $failures, $lockSeconds, $now )
+    {
+        if ( !is_array( $failures ) || !isset( $failures['count'], $failures['since'] ) || (int)$now - (int)$failures['since'] >= (int)$lockSeconds )
+            return array( 'count' => 1, 'since' => (int)$now );
+        return array( 'count' => (int)$failures['count'] + 1, 'since' => (int)$failures['since'] );
+    }
+
+    /**
+     * The channels of a setting, known ones only, in a fixed order.
+     *
+     * @param array $values
+     * @param array $known
+     * @return string[]
+     */
+    public static function channelList( array $values, array $known = self::CHANNELS )
+    {
+        $values = array_map( function ( $v ) { return strtolower( trim( (string)$v ) ); }, $values );
+        return array_values( array_intersect( $known, $values ) );
+    }
+
+    /**
+     * A new app password: the password to show once (groups of four, e.g. abcd-efgh-jkmn-pqrs-tuvw-xyz2) and the
+     * entry to store, which keeps only its salted hash.
+     *
+     * @param string $name
+     * @param string[] $channels
+     * @param int $now
+     * @param int $expires 0: until revoked
+     * @return array password, entry (id, name, channels, salt, hash, created, expires, last_used, last_ip)
+     */
+    public static function newAppPassword( $name, array $channels, $now, $expires = 0 )
+    {
+        $alphabet = self::APP_PASSWORD_ALPHABET;
+        $max = strlen( $alphabet ) - 1;
+        $plain = '';
+        for ( $i = 0; $i < self::APP_PASSWORD_LENGTH; $i++ )
+            $plain .= $alphabet[random_int( 0, $max )];
+        $salt = bin2hex( random_bytes( 16 ) );
+        return array(
+            'password' => implode( '-', str_split( $plain, 4 ) ),
+            'entry' => array(
+                'id' => bin2hex( random_bytes( 6 ) ),
+                'name' => self::cleanAppPasswordName( $name ),
+                'channels' => self::channelList( $channels, self::APP_PASSWORD_CHANNELS ),
+                'salt' => $salt,
+                'hash' => self::hashAppPassword( $plain, $salt ),
+                'created' => (int)$now,
+                'expires' => max( 0, (int)$expires ),
+                'last_used' => 0,
+                'last_ip' => '',
+            ),
+        );
+    }
+
+    /**
+     * A name for an app password: one line, at most APP_PASSWORD_NAME_LENGTH characters, never empty.
+     *
+     * @param string $name
+     * @return string
+     */
+    public static function cleanAppPasswordName( $name )
+    {
+        $name = trim( preg_replace( '/\s+/u', ' ', (string)$name ) );
+        if ( function_exists( 'mb_substr' ) )
+            $name = mb_substr( $name, 0, self::APP_PASSWORD_NAME_LENGTH, 'UTF-8' );
+        else
+            $name = substr( $name, 0, self::APP_PASSWORD_NAME_LENGTH );
+        return $name === '' ? 'App password' : $name;
+    }
+
+    /**
+     * What was typed, in the stored form: lower case without spaces and dashes; '' when it cannot be an app password.
+     *
+     * @param string $secret
+     * @return string
+     */
+    public static function normalizeAppPassword( $secret )
+    {
+        if ( !is_string( $secret ) || strlen( $secret ) > 64 )
+            return '';
+        $plain = strtolower( preg_replace( '/[\s\-]+/', '', $secret ) );
+        if ( strlen( $plain ) !== self::APP_PASSWORD_LENGTH || strspn( $plain, self::APP_PASSWORD_ALPHABET ) !== self::APP_PASSWORD_LENGTH )
+            return '';
+        return $plain;
+    }
+
+    /**
+     * @param string $plain normalized
+     * @param string $salt
+     * @return string HMAC-SHA-256 as hex (the password is 119 random bits: a fast hash is right, as for API keys)
+     */
+    public static function hashAppPassword( $plain, $salt )
+    {
+        return hash_hmac( 'sha256', (string)$plain, (string)$salt );
+    }
+
+    /**
+     * Whether an app password may be used now: not expired.
+     *
+     * @param array $entry
+     * @param int $now
+     * @return bool
+     */
+    public static function appPasswordActive( array $entry, $now )
+    {
+        return empty( $entry['expires'] ) || (int)$entry['expires'] > (int)$now;
+    }
+
+    /**
+     * The index of the stored app password a secret is, when it may be used on the channel now; false otherwise.
+     * Every entry's hash is computed and compared (hash_equals()), so the time does not tell which one matched.
+     *
+     * @param array[] $entries
+     * @param string $secret as sent
+     * @param string $channel
+     * @param int $now
+     * @return int|false
+     */
+    public static function findAppPassword( array $entries, $secret, $channel, $now )
+    {
+        $plain = self::normalizeAppPassword( $secret );
+        if ( $plain === '' )
+            return false;
+        $found = false;
+        foreach ( array_values( $entries ) as $i => $entry )
+        {
+            if ( !isset( $entry['salt'], $entry['hash'] ) || !is_string( $entry['hash'] ) )
+                continue;
+            $matches = hash_equals( $entry['hash'], self::hashAppPassword( $plain, $entry['salt'] ) );
+            if ( $matches && $found === false && in_array( $channel, (array)$entry['channels'], true )
+                 && in_array( $channel, self::APP_PASSWORD_CHANNELS, true ) && self::appPasswordActive( $entry, $now ) )
+                $found = $i;
+        }
+        return $found;
+    }
+
+    /**
+     * The entries without the one of an id.
+     *
+     * @param array[] $entries
+     * @param string $id
+     * @return array[]|false false when no entry has the id
+     */
+    public static function removeAppPassword( array $entries, $id )
+    {
+        $left = array();
+        $removed = false;
+        foreach ( $entries as $entry )
+        {
+            if ( isset( $entry['id'] ) && is_string( $id ) && $id !== '' && hash_equals( (string)$entry['id'], $id ) )
+            {
+                $removed = true;
+                continue;
+            }
+            $left[] = $entry;
+        }
+        return $removed ? $left : false;
+    }
+
+    /**
+     * Stored entries as they may be kept: each with an id, a salt, a 64 character hash and the known fields.
+     *
+     * @param array $entries
+     * @return array[]
+     */
+    public static function cleanAppPasswordEntries( array $entries )
+    {
+        $clean = array();
+        foreach ( $entries as $entry )
+        {
+            if ( !is_array( $entry ) || !isset( $entry['id'], $entry['salt'], $entry['hash'] ) || !is_string( $entry['hash'] ) || strlen( $entry['hash'] ) !== 64 )
+                continue;
+            $clean[] = array(
+                'id' => (string)$entry['id'],
+                'name' => self::cleanAppPasswordName( isset( $entry['name'] ) ? $entry['name'] : '' ),
+                'channels' => self::channelList( isset( $entry['channels'] ) ? (array)$entry['channels'] : array(), self::APP_PASSWORD_CHANNELS ),
+                'salt' => (string)$entry['salt'],
+                'hash' => $entry['hash'],
+                'created' => isset( $entry['created'] ) ? (int)$entry['created'] : 0,
+                'expires' => isset( $entry['expires'] ) ? max( 0, (int)$entry['expires'] ) : 0,
+                'last_used' => isset( $entry['last_used'] ) ? (int)$entry['last_used'] : 0,
+                'last_ip' => isset( $entry['last_ip'] ) ? substr( (string)$entry['last_ip'], 0, 64 ) : '',
+            );
+        }
+        return $clean;
+    }
+
+    /**
+     * What a template and the audit may see of an entry: never the salt or the hash.
+     *
+     * @param array $entry
+     * @param int $now
+     * @return array
+     */
+    public static function describeAppPassword( array $entry, $now )
+    {
+        return array(
+            'id' => (string)$entry['id'],
+            'name' => (string)$entry['name'],
+            'channels' => array_values( (array)$entry['channels'] ),
+            'created' => (int)$entry['created'],
+            'expires' => (int)$entry['expires'],
+            'last_used' => (int)$entry['last_used'],
+            'expired' => !self::appPasswordActive( $entry, $now ),
+        );
+    }
 }

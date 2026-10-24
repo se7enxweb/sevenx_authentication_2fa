@@ -136,6 +136,66 @@
         </div>
         {/if}
 
+        {if and( $app_passwords_enabled, $active )}
+        <div class="acc-card" id="app-passwords">
+            <h2>{'App passwords'|i18n( 'extension/sevenx_authentication_2fa' )}</h2>
+            <p class="acc-lead">{'For a WebDAV drive, a script or an app that signs in with a password and cannot ask for the second step. Each one works only where you allow it, and you can revoke it at any time.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+            {if $new_app_password}
+            <div role="status">
+                <h3>{'Your new app password for %name'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%name', $new_app_password_name ) )|wash}</h3>
+                <ol class="tfa-recovery"><li><code>{$new_app_password|wash}</code></li></ol>
+                <p class="acc-lead">{'Type or paste it in place of your password in that client. Copy it now: it is shown only this once.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+            </div>
+            {/if}
+            {if $app_passwords}
+            <ul class="tfa-apppw-list">
+            {foreach $app_passwords as $app_password}
+                <li>
+                    <span><strong>{$app_password.name|wash}</strong><br />
+                    <small>{foreach $app_password.channels as $channel}{if eq( $channel, 'rest' )}{'REST interface'|i18n( 'extension/sevenx_authentication_2fa' )}{elseif eq( $channel, 'webdav' )}{'WebDAV'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'SOAP'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}{delimiter}, {/delimiter}{/foreach}
+                    &middot; {'Made'|i18n( 'extension/sevenx_authentication_2fa' )} {$app_password.created|l10n( shortdate )}
+                    &middot; {if $app_password.last_used}{'Last used'|i18n( 'extension/sevenx_authentication_2fa' )} {$app_password.last_used|l10n( shortdatetime )}{else}{'Never used'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}
+                    &middot; {if $app_password.expired}{'Expired'|i18n( 'extension/sevenx_authentication_2fa' )}{elseif $app_password.expires}{'Expires'|i18n( 'extension/sevenx_authentication_2fa' )} {$app_password.expires|l10n( shortdate )}{else}{'Works until revoked'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</small></span>
+                    <form method="post" action={'user2fa/setup'|ezurl} class="embed-form" novalidate>
+                        <input type="hidden" name="AppPasswordID" value="{$app_password.id|wash}" />
+                        <button type="submit" class="btn btn-outline" name="AppPasswordRevokeButton" value="1">{'Revoke'|i18n( 'extension/sevenx_authentication_2fa' )}</button>
+                    </form>
+                </li>
+            {/foreach}
+            </ul>
+            {else}
+            <p class="acc-lead">{'No app passwords yet.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+            {/if}
+            {if lt( $app_passwords|count, $app_passwords_max )}
+            <details class="tfa-confirm tfa-neutral"{if and( $error, $new_app_password|not )} open{/if}>
+                <summary>{'Make an app password'|i18n( 'extension/sevenx_authentication_2fa' )}</summary>
+                <form method="post" action={'user2fa/setup'|ezurl} class="embed-form" novalidate>
+                    <div class="form-group">
+                        <label for="tfa-apppw-name" class="form-label">{'Name'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
+                        <input id="tfa-apppw-name" class="form-control" type="text" name="AppPasswordName" value="" maxlength="60" autocomplete="off" />
+                    </div>
+                    <fieldset class="form-group tfa-apppw-scopes">
+                        <legend class="form-label">{'Where it may be used'|i18n( 'extension/sevenx_authentication_2fa' )}</legend>
+                        {foreach $app_password_channels as $channel}
+                        <label><input type="checkbox" name="AppPasswordChannels[]" value="{$channel|wash}" /> {if eq( $channel, 'rest' )}{'REST interface'|i18n( 'extension/sevenx_authentication_2fa' )}{elseif eq( $channel, 'webdav' )}{'WebDAV'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'SOAP'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</label>
+                        {/foreach}
+                    </fieldset>
+                    {if $needs_confirmation}
+                    <div class="form-group">
+                        <label for="tfa-apppw-code" class="form-label">{'Current code from your app'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
+                        <input id="tfa-apppw-code" class="form-control tfa-code" type="text" name="Code" value="" inputmode="numeric" pattern="[0-9 \-]*" maxlength="12" autocomplete="one-time-code" spellcheck="false" />
+                    </div>
+                    {/if}
+                    <div class="acc-actions">
+                        <button type="submit" class="btn btn-primary" name="AppPasswordCreateButton" value="1">{'Make an app password'|i18n( 'extension/sevenx_authentication_2fa' )}</button>
+                    </div>
+                </form>
+            </details>
+            {/if}
+            <p class="acc-lead">{if gt( $app_password_expiry_days, 0 )}{'You can have up to %count app passwords. A new one works for %days days.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%count', $app_passwords_max, '%days', $app_password_expiry_days ) )}{else}{'You can have up to %count app passwords. A new one works until you revoke it.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%count', $app_passwords_max ) )}{/if}</p>
+        </div>
+        {/if}
+
         {if and( ne( $method_now, 'disabled' ), $is_enforced|not, $is_pending_setup|not )}
         <div class="acc-card tfa-reset-card">
             <h2>{'Reset two-factor authentication'|i18n( 'extension/sevenx_authentication_2fa' )}</h2>

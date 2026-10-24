@@ -21,6 +21,11 @@
   recovery: the salt and hashes of the recovery codes left (never the codes);
   setup_asked_at: when a sign-in first asked this user to set up a second step
   (Enforce2FA), the start of the grace period (sevenxAuthentication2faPolicy).
+  app_passwords: the user's app passwords for the sign-in paths outside the web
+  login form (id, name, channels, salt, hash, created, expires, last_used,
+  last_ip; never the password itself); code_failures: wrong authenticator codes
+  sent on those paths (count, since), which lock the code for a while
+  (sevenxAuthentication2faSignIn).
 */
 class sevenxAuthentication2fa
 {
@@ -58,6 +63,16 @@ class sevenxAuthentication2fa
      * @var int|null
      */
     private $setupAskedAt = null;
+
+    /**
+     * @var array[] app passwords, see sevenxAuthentication2faPolicy::newAppPassword()
+     */
+    private $appPasswords = array();
+
+    /**
+     * @var array|null count, since: wrong codes sent outside the web login form
+     */
+    private $codeFailures = null;
 
     public function __construct( $method = 'disabled', $secret = '', $verified = false, $createdAt = null, $lastStep = null )
     {
@@ -245,6 +260,41 @@ class sevenxAuthentication2fa
     }
 
     /**
+     * The stored app passwords (never the passwords themselves).
+     * @return array[]
+     */
+    public function appPasswords()
+    {
+        return $this->appPasswords;
+    }
+
+    /**
+     * @param array $entries see sevenxAuthentication2faPolicy::newAppPassword(); malformed entries are left out
+     */
+    public function setAppPasswords( $entries )
+    {
+        $this->appPasswords = sevenxAuthentication2faPolicy::cleanAppPasswordEntries( is_array( $entries ) ? $entries : array() );
+    }
+
+    /**
+     * @return array|null count, since
+     */
+    public function codeFailures()
+    {
+        return $this->codeFailures;
+    }
+
+    /**
+     * @param array|null $failures count, since
+     */
+    public function setCodeFailures( $failures )
+    {
+        $this->codeFailures = is_array( $failures ) && isset( $failures['count'], $failures['since'] ) && (int)$failures['count'] > 0
+            ? array( 'count' => (int)$failures['count'], 'since' => (int)$failures['since'] )
+            : null;
+    }
+
+    /**
      * @return string JSON representation, the secret encrypted when a key is configured
      */
     public function toJson()
@@ -261,6 +311,10 @@ class sevenxAuthentication2fa
             $data['recovery'] = $this->recovery;
         if ( $this->setupAskedAt !== null )
             $data['setup_asked_at'] = $this->setupAskedAt;
+        if ( $this->appPasswords )
+            $data['app_passwords'] = $this->appPasswords;
+        if ( $this->codeFailures !== null )
+            $data['code_failures'] = $this->codeFailures;
         return json_encode( $data );
     }
 
@@ -288,6 +342,10 @@ class sevenxAuthentication2fa
             $value->setRecovery( $data['recovery'] );
         if ( isset( $data['setup_asked_at'] ) )
             $value->setSetupAskedAt( $data['setup_asked_at'] );
+        if ( isset( $data['app_passwords'] ) )
+            $value->setAppPasswords( $data['app_passwords'] );
+        if ( isset( $data['code_failures'] ) )
+            $value->setCodeFailures( $data['code_failures'] );
         return $value;
     }
 }

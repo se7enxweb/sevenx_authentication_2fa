@@ -22,8 +22,17 @@
      reset) needs a current code from it, so a session left open is not
      enough to weaken the account.
 
+   - App passwords (for REST, WebDAV and SOAP clients, which cannot answer a
+     second step: sevenxAuthentication2faSignIn) are made here with a current
+     code, shown once and revoked here; removing or resetting the second step
+     revokes them all.
+
    POST: SetupButton with Method (totp, email, disabled) and Code; ResetButton
-   with Code. Template variables: data, secret, provisioning_uri, qr_code,
+   with Code; AppPasswordCreateButton with AppPasswordName,
+   AppPasswordChannels[] and Code; AppPasswordRevokeButton with AppPasswordID.
+   Template variables: app_passwords_enabled, app_passwords,
+   app_password_channels, app_passwords_max, app_password_expiry_days,
+   new_app_password, new_app_password_name, and data, secret, provisioning_uri, qr_code,
    error, success, is_enforced, and is_pending_setup, needs_confirmation,
    secret_grouped, issuer, account_name, can_store, has_email, masked_email,
    allowed_methods, selected_method, digits, period, setup_user. */
@@ -103,7 +112,9 @@ $hasEmail = (bool)$setupUser->attribute( 'email' );
 
 $error = '';
 $success = '';
-$activeTotp = $data->isActive() && $data->method() === sevenxAuthentication2faHelper::METHOD_TOTP;
+$newAppPassword = '';
+$newAppPasswordName = '';
+$activeTotp =$data->isActive() && $data->method() === sevenxAuthentication2faHelper::METHOD_TOTP;
 $selectedMethod = $data->isActive() ? $data->method() : ( $isEnforced ? $helper->defaultMethod() : 'totp' );
 if ( $selectedMethod === sevenxAuthentication2faHelper::METHOD_DISABLED )
     $selectedMethod = 'totp';
@@ -185,7 +196,11 @@ if ( $http->hasPostVariable( 'SetupButton' ) )
                 $step = $helper->matchTotp( $secret, $code );
                 if ( $step !== false )
                 {
+                    $previous = $data;
                     $data = new sevenxAuthentication2fa( 'totp', $secret, true, null, $step );
+                    // app passwords stay with the account while it has a working second step
+                    if ( $previous->isActive() )
+                        $data->setAppPasswords( $previous->appPasswords() );
                     $changed = $helper->saveUserData( $userID, $data );
                     $helper->removeEnrolmentSecret( $userID );
                     sevenxAuthentication2faHelper::authLog( '2fa_setup_totp_ok', 'totp configured and verified', $userID );
@@ -212,7 +227,10 @@ if ( $http->hasPostVariable( 'SetupButton' ) )
             $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'E-mail codes remain configured.' );
         else
         {
+            $previous = $data;
             $data = new sevenxAuthentication2fa( 'email', '', true );
+            if ( $previous->isActive() )
+                $data->setAppPasswords( $previous->appPasswords() );
             $changed = $helper->saveUserData( $userID, $data );
             $helper->removeEnrolmentSecret( $userID );
             sevenxAuthentication2faHelper::authLog( '2fa_setup_email', 'email 2fa enabled', $userID );
@@ -226,8 +244,12 @@ if ( $http->hasPostVariable( 'SetupButton' ) )
             $error = $confirmError( $result );
         else
         {
+            $previous = $data;
             $data = new sevenxAuthentication2fa();
             $changed = $helper->saveUserData( $userID, $data );
+            // the app passwords belonged to the second step: they end with it
+            if ( $changed )
+                $helper->auditDroppedAppPasswords( $userID, $previous, 'second_step_removed' );
             sevenxAuthentication2faHelper::authLog( '2fa_setup_disabled', '2fa disabled', $userID );
             $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication disabled.' );
         }
@@ -264,6 +286,66 @@ elseif ( $http->hasPostVariable( 'RecoveryButton' ) && !$isPendingSetup )
             $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'No recovery codes could be made.' );
     }
 }
+elseif ( $http->hasPostVariable( 'AppPasswordCreateButton' ) && !$isPendingSetup )
+{
+    // A new app password for the paths outside the web login form: only with a working second step, confirmed with
+    // the authenticator's current code (so an open session alone cannot make one), shown once below
+    $appSettings = $helper->appPasswordSettings();
+    $wanted = $http->hasPostVariable( 'AppPasswordChannels' ) && is_array( $http->postVariable( 'AppPasswordChannels' ) )
+        ? sevenxAuthentication2faPolicy::channelList( $http->postVariable( 'AppPasswordChannels' ), $appSettings['channels'] ) : array();
+    $result = $activeTotp ? $confirm( $postedString( 'Code' ) ) : true;
+    if ( !$appSettings['enabled'] || !$canStore )
+        $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'App passwords are not available on this site.' );
+    elseif ( !$data->isActive() )
+        $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'App passwords belong to a second step. Set one up first.' );
+    elseif ( count( $data->appPasswords() ) >= $appSettings['max'] )
+        $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'You have as many app passwords as this site allows. Revoke one you no longer use first.' );
+    elseif ( !$wanted )
+        $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Choose where the app password may be used.' );
+    elseif ( $result !== true )
+        $error = $confirmError( $result );
+    else
+    {
+        $now = time();
+        $made = sevenxAuthentication2faPolicy::newAppPassword( $postedString( 'AppPasswordName' ), $wanted, $now,
+                                                              $appSettings['expiry_days'] > 0 ? $now + $appSettings['expiry_days'] * 86400 : 0 );
+        $entries = $data->appPasswords();
+        $entries[] = $made['entry'];
+        $data->setAppPasswords( $entries );
+        if ( $helper->saveUserData( $userID, $data ) )
+        {
+            sevenxAuthentication2faHelper::auditAppPassword( 'create', $setupUser, $made['entry'] );
+            $newAppPassword = $made['password'];
+            $newAppPasswordName = $made['entry']['name'];
+            $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'The app password was made. Copy it now: it is shown only this once.' );
+        }
+        else
+            $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'The app password could not be stored.' );
+    }
+}
+elseif ( $http->hasPostVariable( 'AppPasswordRevokeButton' ) && !$isPendingSetup )
+{
+    // Revoking needs no code: it only takes access away
+    $left = sevenxAuthentication2faPolicy::removeAppPassword( $data->appPasswords(), $postedString( 'AppPasswordID' ) );
+    if ( $left === false )
+        $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'That app password does not exist (any more).' );
+    else
+    {
+        $gone = null;
+        foreach ( $data->appPasswords() as $entry )
+            if ( $entry['id'] === $postedString( 'AppPasswordID' ) )
+                $gone = $entry;
+        $data->setAppPasswords( $left );
+        if ( $helper->saveUserData( $userID, $data ) )
+        {
+            if ( $gone )
+                sevenxAuthentication2faHelper::auditAppPassword( 'revoke', $setupUser, $gone, array( 'reason' => 'owner' ) );
+            $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'The app password was revoked. Clients that use it can no longer sign in with it.' );
+        }
+        else
+            $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'The app password could not be stored.' );
+    }
+}
 elseif ( $http->hasPostVariable( 'ResetButton' ) )
 {
     $result = $activeTotp ? $confirm( $postedString( 'Code' ) ) : true;
@@ -275,8 +357,11 @@ elseif ( $http->hasPostVariable( 'ResetButton' ) )
         $error = $confirmError( $result );
     else
     {
+        $previous = $data;
         $data = new sevenxAuthentication2fa();
         $changed = $helper->saveUserData( $userID, $data );
+        if ( $changed )
+            $helper->auditDroppedAppPasswords( $userID, $previous, 'second_step_reset' );
         $helper->removeEnrolmentSecret( $userID );
         sevenxAuthentication2faHelper::authLog( '2fa_setup_reset', '2fa configuration reset by user', $userID );
         $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication configuration has been reset.' );
@@ -354,6 +439,18 @@ $tpl->setVariable( 'selected_method', $selectedMethod );
 $tpl->setVariable( 'digits', $settings['digits'] );
 $tpl->setVariable( 'period', $settings['period'] );
 $tpl->setVariable( 'setup_user', $setupUser );
+// App passwords: what a template may see of them (never a salt or a hash), the new one once
+$appSettings = $helper->appPasswordSettings();
+$appPasswordList = array();
+foreach ( $data->appPasswords() as $entry )
+    $appPasswordList[] = sevenxAuthentication2faPolicy::describeAppPassword( $entry, time() );
+$tpl->setVariable( 'app_passwords_enabled', $appSettings['enabled'] && $canStore && !$isPendingSetup && $appSettings['channels'] );
+$tpl->setVariable( 'app_passwords', $appPasswordList );
+$tpl->setVariable( 'app_password_channels', $appSettings['channels'] );
+$tpl->setVariable( 'app_passwords_max', $appSettings['max'] );
+$tpl->setVariable( 'app_password_expiry_days', $appSettings['expiry_days'] );
+$tpl->setVariable( 'new_app_password', $newAppPassword );
+$tpl->setVariable( 'new_app_password_name', $newAppPasswordName );
 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:user2fa/setup.tpl' );

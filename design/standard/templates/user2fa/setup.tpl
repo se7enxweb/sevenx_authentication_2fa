@@ -10,7 +10,9 @@
    (the key shown, so a page that went out of date is noticed), SetupButton, ResetButton, RecoveryButton (new
    recovery codes, with a current code) and, while a grace period lasts ($grace_days_left), LaterButton. The
    recovery codes ($recovery_codes) are shown once, right after they were made; $continue_url goes on to where a
-   first sign-in was going. Moving away from a
+   first sign-in was going. App passwords ($app_passwords, made with AppPasswordCreateButton, AppPasswordName,
+   AppPasswordChannels[] and Code, revoked with AppPasswordRevokeButton and AppPasswordID) are listed for a signed in
+   account with a working second step; a new one ($new_app_password) is shown once. Moving away from a
    confirmed authenticator needs a current code from it ($needs_confirmation). Works without javascript; the
    script only hides the enrolment while another method is chosen.
    Guide: extension/sevenx_authentication_2fa/doc/two-factor-pages.md *}
@@ -163,6 +165,70 @@
         </form>
     </div>
 </details>
+</section>
+{/if}
+
+{if and( $app_passwords_enabled, $active )}
+<section class="exp-section" aria-labelledby="tfa-apppw-title" id="app-passwords">
+<h2 class="exp-h2" id="tfa-apppw-title">{'App passwords'|i18n( 'extension/sevenx_authentication_2fa' )}</h2>
+<p class="exp-muted">{'For a WebDAV drive, a script or an app that signs in with a password and cannot ask for the second step. Each one works only where you allow it, and you can revoke it at any time.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+{if $new_app_password}
+<div class="exp-panel" role="status">
+    <div class="exp-panel-head"><h3>{'Your new app password for %name'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%name', $new_app_password_name ) )|wash}</h3></div>
+    <p class="exp-apppw-new"><code>{$new_app_password|wash}</code></p>
+    <p class="exp-muted">{'Type or paste it in place of your password in that client. Copy it now: it is shown only this once.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+</div>
+{/if}
+{if $app_passwords}
+<ul class="exp-apppw-list">
+{foreach $app_passwords as $app_password}
+    <li class="exp-apppw">
+        <span>
+            <span class="exp-apppw-name">{$app_password.name|wash}</span>
+            <span class="exp-apppw-meta">{foreach $app_password.channels as $channel}{if eq( $channel, 'rest' )}{'REST interface'|i18n( 'extension/sevenx_authentication_2fa' )}{elseif eq( $channel, 'webdav' )}{'WebDAV'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'SOAP'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}{delimiter}, {/delimiter}{/foreach}
+            &middot; {'Made'|i18n( 'extension/sevenx_authentication_2fa' )} {$app_password.created|l10n( shortdate )}
+            &middot; {if $app_password.last_used}{'Last used'|i18n( 'extension/sevenx_authentication_2fa' )} {$app_password.last_used|l10n( shortdatetime )}{else}{'Never used'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}
+            &middot; {if $app_password.expired}{'Expired'|i18n( 'extension/sevenx_authentication_2fa' )}{elseif $app_password.expires}{'Expires'|i18n( 'extension/sevenx_authentication_2fa' )} {$app_password.expires|l10n( shortdate )}{else}{'Works until revoked'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</span>
+        </span>
+        <form method="post" action={'user2fa/setup'|ezurl} novalidate="novalidate">
+            <input type="hidden" name="AppPasswordID" value="{$app_password.id|wash}" />
+            <button type="submit" class="exp-btn exp-btn-outline-danger" name="AppPasswordRevokeButton" value="1">{'Revoke'|i18n( 'extension/sevenx_authentication_2fa' )}</button>
+        </form>
+    </li>
+{/foreach}
+</ul>
+{else}
+<p class="exp-meta">{'No app passwords yet.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+{/if}
+{if lt( $app_passwords|count, $app_passwords_max )}
+<details class="exp-confirm is-neutral"{if and( $error, $new_app_password|not )} open="open"{/if}>
+    <summary>{'Make an app password'|i18n( 'extension/sevenx_authentication_2fa' )}</summary>
+    <div>
+        <form method="post" action={'user2fa/setup'|ezurl} novalidate="novalidate">
+            <div class="exp-field">
+                <label for="tfa-apppw-name">{'Name'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
+                <input id="tfa-apppw-name" class="exp-code" type="text" name="AppPasswordName" value="" maxlength="60" autocomplete="off" />
+            </div>
+            <fieldset class="exp-apppw-scopes">
+                <legend>{'Where it may be used'|i18n( 'extension/sevenx_authentication_2fa' )}</legend>
+                {foreach $app_password_channels as $channel}
+                <label><input type="checkbox" name="AppPasswordChannels[]" value="{$channel|wash}" /> {if eq( $channel, 'rest' )}{'REST interface'|i18n( 'extension/sevenx_authentication_2fa' )}{elseif eq( $channel, 'webdav' )}{'WebDAV'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'SOAP'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</label>
+                {/foreach}
+            </fieldset>
+            <div class="exp-confirm-row">
+                {if $needs_confirmation}
+                <div class="exp-field">
+                    <label for="tfa-apppw-code">{'Current code from your app'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
+                    <input id="tfa-apppw-code" class="exp-code" type="text" name="Code" value="" inputmode="numeric" pattern="[0-9 \-]*" maxlength="12" autocomplete="one-time-code" spellcheck="false" />
+                </div>
+                {/if}
+                <button type="submit" class="exp-btn exp-btn-primary" name="AppPasswordCreateButton" value="1">{'Make an app password'|i18n( 'extension/sevenx_authentication_2fa' )}</button>
+            </div>
+        </form>
+    </div>
+</details>
+{/if}
+<p class="exp-meta">{if gt( $app_password_expiry_days, 0 )}{'You can have up to %count app passwords. A new one works for %days days.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%count', $app_passwords_max, '%days', $app_password_expiry_days ) )}{else}{'You can have up to %count app passwords. A new one works until you revoke it.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%count', $app_passwords_max ) )}{/if}</p>
 </section>
 {/if}
 
