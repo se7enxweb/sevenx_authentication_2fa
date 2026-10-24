@@ -80,3 +80,7 @@
     .tfa-m .tfa-qr img { width: 160px; height: 160px; }
     .tfa-m .tfa-code.form-control { max-width: none; }
 }
+
+/* Recovery codes, shown once after an authenticator was set up (user2fa/setup) */
+.tfa-m .tfa-recovery { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: .4rem 1rem; margin: .75rem 0 1rem; padding: .75rem 1rem; list-style: none; background: var(--tfa-soft); border: 1px dashed var(--tfa-line); }
+.tfa-m .tfa-recovery li { margin: 0; font: 700 1rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .06em; color: var(--tfa-ink); user-select: all; }

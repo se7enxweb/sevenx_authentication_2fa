@@ -17,7 +17,7 @@
 <header class="full-page-header acc-header text-center no-breadcrumbs">
     <div class="container">
         <h1 class="full-page-title">{if $is_pending_setup}{'Set up a second step'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'Two-step sign-in'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</h1>
-        <p class="full-page-header-text">{if $is_pending_setup}{'Your password was right. This site asks every account for a second step at sign-in; set it up now to continue.'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'After your password, a code from your phone or your e-mail. Your password alone is then useless to anyone else.'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</p>
+        <p class="full-page-header-text">{if $is_pending_setup}{'Your password was right. This site asks your account for a second step at sign-in; set it up now to continue.'|i18n( 'extension/sevenx_authentication_2fa' )}{if gt( $grace_days_left, 0 )} {'You may also set it up later: for %days more days the password alone still signs you in.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%days', $grace_days_left ) )}{/if}{else}{'After your password, a code from your phone or your e-mail. Your password alone is then useless to anyone else.'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</p>
     </div>
 </header>
 
@@ -27,6 +27,14 @@
 
         {if $success}<div class="acc-notice success" role="status"><p>{$success|wash}</p></div>{/if}
         {if $error}<div class="acc-notice error" role="alert" id="tfa-setup-error"><p>{$error|wash}</p></div>{/if}
+        {if $recovery_codes}
+        <div class="acc-card">
+            <h2>{'Your recovery codes'|i18n( 'extension/sevenx_authentication_2fa' )}</h2>
+            <p class="acc-lead">{'If you lose your phone, each of these codes signs you in once in place of the app\'s code. Print them or keep them in a password manager now: they are shown only this once.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+            <ol class="tfa-recovery">{foreach $recovery_codes as $recovery_code}<li><code>{$recovery_code|wash}</code></li>{/foreach}</ol>
+            {if $continue_url}<div class="acc-actions"><a class="btn btn-primary" href={$continue_url|ezurl}>{'I have saved them, continue'|i18n( 'extension/sevenx_authentication_2fa' )}</a></div>{/if}
+        </div>
+        {/if}
 
 {if $can_store|not}
         <div class="acc-notice warning" role="alert"><p>{'This account cannot keep a second step: its user class has no two-factor field. Ask the site administrator.'|i18n( 'extension/sevenx_authentication_2fa' )}</p></div>
@@ -36,6 +44,7 @@
             <p><strong>{'Second step at sign-in'|i18n( 'extension/sevenx_authentication_2fa' )}:</strong>
                <span class="tfa-pill{if $active} is-on{/if}">{if eq( $method_now, 'totp' )}{'Authenticator app'|i18n( 'extension/sevenx_authentication_2fa' )}{elseif eq( $method_now, 'email' )}{'E-mail codes'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'Off'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</span></p>
             <p class="tfa-hint">{if $is_enforced}{'Required on this site.'|i18n( 'extension/sevenx_authentication_2fa' )}{elseif $active}{'Set up on %date.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%date', $data.created_at|l10n( shortdate ) ) )}{else}{'Your choice: it is off now.'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</p>
+            {if and( $needs_confirmation, $recovery_enabled )}<p class="tfa-hint">{'Recovery codes left'|i18n( 'extension/sevenx_authentication_2fa' )}: {$recovery_codes_left}</p>{/if}
         </div>
         {/if}
 
@@ -103,9 +112,29 @@
 
             <div class="acc-actions">
                 <button type="submit" class="btn btn-primary" name="SetupButton" value="1">{if $is_pending_setup}{'Save and sign in'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'Save settings'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</button>
+                {if gt( $grace_days_left, 0 )}<button type="submit" class="btn btn-secondary" name="LaterButton" value="1" formnovalidate>{'Set up later'|i18n( 'extension/sevenx_authentication_2fa' )}</button>{/if}
                 {if $is_pending_setup}<a class="btn btn-outline" href={'user/login'|ezurl}>{'Cancel'|i18n( 'extension/sevenx_authentication_2fa' )}</a>{else}<a class="btn btn-outline" href={'user/edit'|ezurl}>{'Back to my account'|i18n( 'extension/sevenx_authentication_2fa' )}</a>{/if}
             </div>
         </form>
+
+        {if and( $needs_confirmation, $recovery_enabled, $is_pending_setup|not )}
+        <div class="acc-card">
+            <h2>{'Recovery codes'|i18n( 'extension/sevenx_authentication_2fa' )}</h2>
+            <p class="acc-lead">{'One-time codes that sign you in when your phone is lost. Making new ones makes the old ones stop working.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+            <details class="tfa-confirm">
+                <summary>{'Make new recovery codes'|i18n( 'extension/sevenx_authentication_2fa' )}</summary>
+                <form method="post" action={'user2fa/setup'|ezurl} class="embed-form" novalidate>
+                    <div class="form-group">
+                        <label for="tfa-recovery-code" class="form-label">{'Current code from your app'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
+                        <input id="tfa-recovery-code" class="form-control tfa-code" type="text" name="Code" value="" inputmode="numeric" pattern="[0-9 \-]*" maxlength="12" autocomplete="one-time-code" spellcheck="false" />
+                    </div>
+                    <div class="acc-actions">
+                        <button type="submit" class="btn btn-outline" name="RecoveryButton" value="1">{'Make new recovery codes'|i18n( 'extension/sevenx_authentication_2fa' )}</button>
+                    </div>
+                </form>
+            </details>
+        </div>
+        {/if}
 
         {if and( ne( $method_now, 'disabled' ), $is_enforced|not, $is_pending_setup|not )}
         <div class="acc-card tfa-reset-card">

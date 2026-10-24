@@ -48,6 +48,21 @@
                 {if and( $is_email, gt( $resend_wait, 0 ) )}<p class="tfa-hint">{'A new code can be sent in %seconds seconds.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%seconds', $resend_wait ) )}</p>{/if}
             </div>
         </form>
+        {if and( $is_email|not, gt( $recovery_codes_left, 0 ) )}
+        <details class="tfa-confirm">
+            <summary>{'Use a recovery code'|i18n( 'extension/sevenx_authentication_2fa' )}</summary>
+            <form method="post" action={'user2fa/verify'|ezurl} class="embed-form" novalidate>
+                <div class="form-group">
+                    <label for="RecoveryCode" class="form-label">{'Recovery code'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
+                    <input id="RecoveryCode" class="form-control tfa-code" type="text" name="Code" value="" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="tfa-recovery-help" />
+                    <p class="tfa-hint" id="tfa-recovery-help">{'One of the codes you saved when you set up the app. Each works once; %count are left.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%count', $recovery_codes_left ) )}</p>
+                </div>
+                <div class="acc-actions">
+                    <button type="submit" class="btn btn-secondary" name="VerifyButton" value="1">{'Sign in with the recovery code'|i18n( 'extension/sevenx_authentication_2fa' )}</button>
+                </div>
+            </form>
+        </details>
+        {/if}
         {if $is_email|not}<p class="text-center note">{'No access to your app? Ask the site\'s editors to reset your second step.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>{/if}
 {else}
         <div class="acc-notice {if eq( $status, 'locked' )}error{elseif eq( $status, 'elsewhere' )}info{else}warning{/if}" role="{if eq( $status, 'locked' )}alert{else}status{/if}">

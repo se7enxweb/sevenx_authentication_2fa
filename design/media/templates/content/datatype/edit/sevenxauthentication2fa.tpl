@@ -8,7 +8,7 @@
 {def $data = $attribute.content
      $method = $data.method
      $id_base = concat( 'ezcoa-', $attribute.contentclassattribute_id, '_', $attribute.contentclass_attribute_identifier )
-     $is_enforced = and( ezini_hasvariable( 'General', 'Enforce2FA', 'sevenxauthentication2fa.ini' ), eq( ezini( 'General', 'Enforce2FA', 'sevenxauthentication2fa.ini' ), 'enabled' ) )}
+     $is_enforced = $data.is_enforced}
 {if ne( $attribute_base, 'ContentObjectAttribute' )}
     {set $id_base = concat( 'ezcoa-', $attribute_base, '-', $attribute.contentclassattribute_id, '_', $attribute.contentclass_attribute_identifier )}
 {/if}

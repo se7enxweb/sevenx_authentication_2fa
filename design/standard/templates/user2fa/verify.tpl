@@ -47,6 +47,21 @@
     {/if}
 </form>
 
+{if and( $is_email|not, gt( $recovery_codes_left, 0 ) )}
+<details class="exp-confirm">
+    <summary>{'Use a recovery code'|i18n( 'extension/sevenx_authentication_2fa' )}</summary>
+    <form method="post" action={'user2fa/verify'|ezurl} novalidate="novalidate">
+        <div class="exp-field">
+            <label for="RecoveryCode">{'Recovery code'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
+            <input id="RecoveryCode" class="exp-code" type="text" name="Code" value="" maxlength="16"
+                   autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="tfa-recovery-help" />
+            <span class="exp-help" id="tfa-recovery-help">{'One of the codes you saved when you set up the app. Each works once; %count are left.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%count', $recovery_codes_left ) )}</span>
+        </div>
+        <button type="submit" class="exp-btn is-wide" name="VerifyButton" value="1">{'Sign in with the recovery code'|i18n( 'extension/sevenx_authentication_2fa' )}</button>
+    </form>
+</details>
+{/if}
+
 <div class="exp-links">
     <p><a href={'user/login'|ezurl}>{'Cancel and sign in again'|i18n( 'extension/sevenx_authentication_2fa' )}</a></p>
     {if $is_email|not}<p class="exp-muted">{'No access to your app? Ask an administrator to reset your second step.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>{/if}

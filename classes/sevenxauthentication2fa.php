@@ -18,6 +18,9 @@
   method, secret (encrypted when a key is configured, see
   sevenxAuthentication2faCrypto), verified, created_at, and last_step: the
   last TOTP time step that signed in, so its code cannot be used again.
+  recovery: the salt and hashes of the recovery codes left (never the codes);
+  setup_asked_at: when a sign-in first asked this user to set up a second step
+  (Enforce2FA), the start of the grace period (sevenxAuthentication2faPolicy).
 */
 class sevenxAuthentication2fa
 {
@@ -45,6 +48,16 @@ class sevenxAuthentication2fa
      * @var int|null
      */
     private $lastStep;
+
+    /**
+     * @var array|null salt, hashes
+     */
+    private $recovery = null;
+
+    /**
+     * @var int|null
+     */
+    private $setupAskedAt = null;
 
     public function __construct( $method = 'disabled', $secret = '', $verified = false, $createdAt = null, $lastStep = null )
     {
@@ -74,6 +87,11 @@ class sevenxAuthentication2fa
                 return $this->createdAt;
             case 'is_active':
                 return $this->isActive();
+            case 'is_enforced':
+                // Whether Enforce2FA applies to the user of this field (set by the datatype)
+                return $this->enforced;
+            case 'recovery_codes_left':
+                return sevenxAuthentication2faPolicy::recoveryCodesLeft( $this->recovery );
             case 'has_secret':
                 return $this->secret !== '';
             case 'is_enrolling':
@@ -104,6 +122,17 @@ class sevenxAuthentication2fa
     }
 
     /**
+     * Whether Enforce2FA applies to the user of this field (set by the datatype, not stored).
+     * @var bool
+     */
+    private $enforced = false;
+
+    public function setEnforced( $enforced )
+    {
+        $this->enforced = (bool)$enforced;
+    }
+
+    /**
      * The otpauth:// URI of an enrolment, with the site's TOTP settings.
      * @return string
      */
@@ -120,7 +149,7 @@ class sevenxAuthentication2fa
      */
     public function hasAttribute( $name )
     {
-        return in_array( $name, array( 'method', 'secret', 'verified', 'created_at', 'is_active', 'has_secret', 'is_enrolling',
+        return in_array( $name, array( 'method', 'secret', 'verified', 'created_at', 'is_active', 'is_enforced', 'recovery_codes_left', 'has_secret', 'is_enrolling',
                                        'enrolment_secret', 'enrolment_secret_grouped', 'enrolment_qr' ), true );
     }
 
@@ -181,6 +210,41 @@ class sevenxAuthentication2fa
     }
 
     /**
+     * The stored recovery codes (salt, hashes), or null.
+     * @return array|null
+     */
+    public function recovery()
+    {
+        return $this->recovery;
+    }
+
+    /**
+     * @param array|null $recovery salt, hashes (sevenxAuthentication2faPolicy::hashRecoveryCodes())
+     */
+    public function setRecovery( $recovery )
+    {
+        $this->recovery = is_array( $recovery ) && isset( $recovery['salt'], $recovery['hashes'] ) && is_array( $recovery['hashes'] )
+            ? array( 'salt' => (string)$recovery['salt'], 'hashes' => array_values( array_filter( $recovery['hashes'], 'is_string' ) ) )
+            : null;
+    }
+
+    /**
+     * @return int|null when a sign-in first asked for a second step
+     */
+    public function setupAskedAt()
+    {
+        return $this->setupAskedAt;
+    }
+
+    /**
+     * @param int|null $time
+     */
+    public function setSetupAskedAt( $time )
+    {
+        $this->setupAskedAt = $time === null ? null : (int)$time;
+    }
+
+    /**
      * @return string JSON representation, the secret encrypted when a key is configured
      */
     public function toJson()
@@ -193,6 +257,10 @@ class sevenxAuthentication2fa
         );
         if ( $this->lastStep !== null )
             $data['last_step'] = $this->lastStep;
+        if ( $this->recovery !== null )
+            $data['recovery'] = $this->recovery;
+        if ( $this->setupAskedAt !== null )
+            $data['setup_asked_at'] = $this->setupAskedAt;
         return json_encode( $data );
     }
 
@@ -209,12 +277,17 @@ class sevenxAuthentication2fa
         if ( !is_array( $data ) )
             return new self();
 
-        return new self(
+        $value = new self(
             isset( $data['method'] ) ? $data['method'] : 'disabled',
             isset( $data['secret'] ) ? sevenxAuthentication2faCrypto::decrypt( $data['secret'] ) : '',
             isset( $data['verified'] ) ? $data['verified'] : false,
             isset( $data['created_at'] ) ? $data['created_at'] : null,
             isset( $data['last_step'] ) ? $data['last_step'] : null
         );
+        if ( isset( $data['recovery'] ) )
+            $value->setRecovery( $data['recovery'] );
+        if ( isset( $data['setup_asked_at'] ) )
+            $value->setSetupAskedAt( $data['setup_asked_at'] );
+        return $value;
     }
 }

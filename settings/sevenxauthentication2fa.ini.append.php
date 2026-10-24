@@ -10,8 +10,37 @@ Issuer=Exponential
 # Default method for users who have not explicitly chosen: totp | email | disabled
 DefaultMethod=disabled
 
-# Require 2FA for all users with the configured method. When disabled, users opt-in.
+# Require a second step at sign-in. When disabled, users opt in on their account page.
+# When enabled, a user it applies to who has none set up is taken to the setup page
+# after the password (DefaultMethod: totp sets up an authenticator app, email sends
+# codes to the account's address without a setup) and is signed in only after it.
+# It stays off here so that updating the extension never locks anyone out; the
+# installers of new sites switch it on in settings/override for the groups below.
 Enforce2FA=disabled
+
+# Whom Enforce2FA applies to: members of these user groups, directly or through a
+# group below them. Each value is the group's node id (as the administration shows
+# it) or its object remote id, which is the same on every installation made from
+# the standard data:
+#   Administrator users  9b47a45624b023b1a76c73b74d704acf
+#   Editors              3c160cca19fb135f83bd02d911f04db2
+# Empty: every user. A list that names no existing group applies to nobody (the
+# error log names the value).
+EnforcedGroups[]
+
+# Never asked for a second step by Enforce2FA (they may still set one up): members of
+# these user groups (node id or object remote id), and accounts whose e-mail address
+# is in one of these domains (exactly that domain). Meant for accounts of automated
+# checks, e.g. ExemptEmailDomains[]=example.invalid (a reserved domain no mail
+# reaches). Whoever may change these settings or move users into such a group
+# decides who needs no second step: keep both lists short.
+ExemptGroups[]
+ExemptEmailDomains[]
+
+# Days a user whom Enforce2FA asks for a second step may still sign in without one,
+# with "Set up later" on the setup page, counted from the first sign-in that asked.
+# 0: the setup comes first. Needs the user class's two-factor field to count.
+GracePeriodDays=0
 
 # Allow fallback to email OTP when TOTP is configured but the authenticator is unavailable.
 AllowEmailFallback=enabled
@@ -74,6 +103,12 @@ MaxResends=3
 
 # Seconds a user who has to set up a second step first (Enforce2FA) has for it.
 SetupTTL=900
+
+# Recovery codes an authenticator app gets when it is set up: one-time codes that
+# sign in in place of the app's code when the phone is lost. They are shown once,
+# only their hashes are stored, and the user can make a new set (which ends the old
+# one) on the setup page with a current code. 0: none. At most 20.
+RecoveryCodes=10
 
 [SocialLogin]
 # Master switch for OAuth/social login handlers.

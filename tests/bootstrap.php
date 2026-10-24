@@ -19,6 +19,7 @@ require_once $checkout . '/classes/sevenxauthentication2faattempts.php';
 require_once $checkout . '/classes/sevenxauthentication2faredirect.php';
 require_once $checkout . '/classes/sevenxauthentication2facrypto.php';
 require_once $checkout . '/classes/sevenxauthentication2fa.php';
+require_once $checkout . '/classes/sevenxauthentication2fapolicy.php';
 
 sevenxAuthentication2faRedirect::$useKernelRules = false;
 sevenxAuthentication2faCrypto::setKey( '' );

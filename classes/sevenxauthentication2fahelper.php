@@ -112,12 +112,143 @@ class sevenxAuthentication2faHelper
     }
 
     /**
-     * Is 2FA enforced for every user?
+     * Is Enforce2FA switched on? Whom it applies to: isEnforcedFor().
      * @return bool
      */
     public function isEnforced()
     {
         return strtolower( $this->stringSetting( 'General', 'Enforce2FA' ) ) === 'enabled';
+    }
+
+    /**
+     * The values of an array setting, trimmed, without empty ones.
+     * @param string $block
+     * @param string $variable
+     * @return string[]
+     */
+    public function arraySetting( $block, $variable )
+    {
+        if ( !$this->ini->hasVariable( $block, $variable ) )
+            return array();
+        $values = array();
+        foreach ( (array)$this->ini->variable( $block, $variable ) as $value )
+        {
+            $value = trim( (string)$value );
+            if ( $value !== '' )
+                $values[] = $value;
+        }
+        return $values;
+    }
+
+    /**
+     * Object ids of user groups named in a setting: a number is the group's node id (as the administration
+     * shows it), anything else its object remote id (the same on every installation made from the same data,
+     * e.g. Administrator users 9b47a45624b023b1a76c73b74d704acf, Editors 3c160cca19fb135f83bd02d911f04db2).
+     * Names that match no object are left out and logged.
+     * @param string[] $identifiers
+     * @return int[]
+     */
+    public static function groupObjectIDs( array $identifiers )
+    {
+        $ids = array();
+        foreach ( $identifiers as $identifier )
+        {
+            $object = null;
+            if ( ctype_digit( $identifier ) )
+            {
+                $node = eZContentObjectTreeNode::fetch( (int)$identifier );
+                if ( $node instanceof eZContentObjectTreeNode )
+                    $object = $node->object();
+            }
+            else
+            {
+                $object = eZContentObject::fetchByRemoteID( $identifier );
+            }
+            if ( $object instanceof eZContentObject )
+                $ids[] = (int)$object->attribute( 'id' );
+            else
+                eZDebug::writeError( 'sevenxauthentication2fa.ini names a user group that does not exist: ' . $identifier, __METHOD__ );
+        }
+        return array_values( array_unique( $ids ) );
+    }
+
+    /**
+     * Does Enforce2FA apply to this user: switched on, the user in EnforcedGroups[] (or none listed), and not
+     * taken out by ExemptGroups[] or ExemptEmailDomains[] (sevenxAuthentication2faPolicy::applies())?
+     * @param int|eZUser $user
+     * @return bool
+     */
+    public function isEnforcedFor( $user )
+    {
+        if ( !$this->isEnforced() )
+            return false;
+        if ( !$user instanceof eZUser )
+            $user = eZUser::fetch( (int)$user );
+        if ( !$user instanceof eZUser )
+            return false;
+
+        $enforcedNames = $this->arraySetting( 'General', 'EnforcedGroups' );
+        return sevenxAuthentication2faPolicy::applies(
+            true,
+            $enforcedNames ? self::groupObjectIDs( $enforcedNames ) : array(),
+            self::groupObjectIDs( $this->arraySetting( 'General', 'ExemptGroups' ) ),
+            $this->arraySetting( 'General', 'ExemptEmailDomains' ),
+            (array)$user->groups(),
+            (string)$user->attribute( 'email' ),
+            (bool)$enforcedNames
+        );
+    }
+
+    /**
+     * GracePeriodDays: days a user whom Enforce2FA asks for a second step may still sign in without one.
+     * @return int
+     */
+    public function graceDays()
+    {
+        return max( 0, min( 365, $this->intSetting( 'General', 'GracePeriodDays', 0 ) ) );
+    }
+
+    /**
+     * Seconds left of a user's grace period (0: none, the setup comes first).
+     * @param int $userID
+     * @return int
+     */
+    public function graceLeft( $userID )
+    {
+        $days = $this->graceDays();
+        if ( $days <= 0 )
+            return 0;
+        $data = $this->userData( $userID );
+        // Without a 2FA field nothing can be remembered, so there is no grace period either
+        if ( !$data && !$this->canStore( $userID ) )
+            return 0;
+        return sevenxAuthentication2faPolicy::graceLeft( $days, $data ? $data->setupAskedAt() : null, time() );
+    }
+
+    /**
+     * Remember when a sign-in first asked a user to set up a second step (the start of the grace period).
+     * @param int $userID
+     */
+    public function markSetupAsked( $userID )
+    {
+        if ( $this->graceDays() <= 0 || !$this->canStore( $userID ) )
+            return;
+        $data = $this->userData( $userID );
+        if ( !$data )
+            $data = new sevenxAuthentication2fa();
+        if ( $data->setupAskedAt() !== null )
+            return;
+        $data->setSetupAskedAt( time() );
+        $this->saveUserData( $userID, $data );
+    }
+
+    /**
+     * [Security] RecoveryCodes: how many recovery codes an authenticator gets (0: none).
+     * @return int
+     */
+    public function recoveryCodeCount()
+    {
+        return max( 0, min( 20, $this->intSetting( 'Security', 'RecoveryCodes', 10 ) ) );
     }
 
     /**
@@ -289,14 +420,54 @@ class sevenxAuthentication2faHelper
         $data = $this->userData( $userID );
         if ( $data && $data->isActive() )
             return $data->method();
-        if ( $data && $data->method() === self::METHOD_TOTP && $data->secret() !== '' && !$data->verified() )
-        {
-            // An enrolment that was never finished: not a working second step
-            return $this->isEnforced() ? $this->defaultMethod() : self::METHOD_DISABLED;
-        }
-        if ( $this->isEnforced() )
+        // Nothing set up, or an enrolment that was never finished (not a working second step)
+        if ( $this->isEnforcedFor( $userID ) )
             return $this->defaultMethod();
         return self::METHOD_DISABLED;
+    }
+
+    /**
+     * Give a user's authenticator a new set of recovery codes (the old ones stop working) and store their
+     * hashes. The codes themselves are returned once, to be shown to the user, and never stored.
+     * @param int $userID
+     * @param sevenxAuthentication2fa|null $data the configuration to add them to (default: the stored one)
+     * @return string[] the codes; empty when there are none to give (RecoveryCodes=0, no authenticator, not stored)
+     */
+    public function issueRecoveryCodes( $userID, $data = null )
+    {
+        $count = $this->recoveryCodeCount();
+        if ( $data === null )
+            $data = $this->userData( $userID );
+        if ( $count <= 0 || !$data instanceof sevenxAuthentication2fa || !$data->isActive() || $data->method() !== self::METHOD_TOTP )
+            return array();
+        $codes = sevenxAuthentication2faPolicy::newRecoveryCodes( $count );
+        $data->setRecovery( sevenxAuthentication2faPolicy::hashRecoveryCodes( $codes ) );
+        if ( !$this->saveUserData( $userID, $data ) )
+            return array();
+        self::authLog( '2fa_recovery_codes_issued', 'count=' . count( $codes ), $userID );
+        return $codes;
+    }
+
+    /**
+     * Sign in with a recovery code in place of the authenticator's code: true when it was one of the user's
+     * codes, which is then used up.
+     * @param int $userID
+     * @param string $code as typed
+     * @return bool
+     */
+    public function useRecoveryCode( $userID, $code )
+    {
+        $data = $this->userData( $userID );
+        if ( !$data || !$data->isActive() || $data->method() !== self::METHOD_TOTP )
+            return false;
+        $left = sevenxAuthentication2faPolicy::useRecoveryCode( $data->recovery(), $code );
+        if ( $left === false )
+            return false;
+        $data->setRecovery( $left );
+        if ( !$this->saveUserData( $userID, $data ) )
+            return false;
+        self::authLog( '2fa_recovery_code_used', 'left=' . count( $left['hashes'] ), $userID );
+        return true;
     }
 
     /**

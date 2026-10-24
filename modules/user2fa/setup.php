@@ -77,7 +77,28 @@ $data = $helper->userData( $userID );
 if ( !$data )
     $data = new sevenxAuthentication2fa();
 $canStore = $helper->canStore( $userID );
-$isEnforced = $helper->isEnforced();
+// Enforce2FA as it applies to this user (EnforcedGroups[], ExemptGroups[], ExemptEmailDomains[])
+$isEnforced = $helper->isEnforcedFor( $setupUser );
+
+// A first setup asked for by Enforce2FA may wait while the grace period lasts, unless an authenticator was
+// confirmed before (one that broke is set up again, not skipped)
+$graceLeft = 0;
+if ( $isPendingSetup && $isEnforced && !$data->isActive() && !( $data->method() === sevenxAuthentication2faHelper::METHOD_TOTP && $data->verified() ) )
+    $graceLeft = $helper->graceLeft( $userID );
+
+// Recovery codes are shown once: right after they were made, or after the first setup signed the user in
+$recoveryCodes = array();
+$continueURL = '';
+if ( !$isPendingSetup && $http->hasSessionVariable( 'Sevenx2FA_ShowRecovery' ) )
+{
+    $shown = $http->sessionVariable( 'Sevenx2FA_ShowRecovery' );
+    $http->removeSessionVariable( 'Sevenx2FA_ShowRecovery' );
+    if ( is_array( $shown ) && isset( $shown['user_id'], $shown['codes'] ) && (int)$shown['user_id'] === $userID && is_array( $shown['codes'] ) )
+    {
+        $recoveryCodes = $shown['codes'];
+        $continueURL = isset( $shown['redirect'] ) ? sevenxAuthentication2faHelper::normalizeRedirect( $shown['redirect'] ) : '';
+    }
+}
 $hasEmail = (bool)$setupUser->attribute( 'email' );
 
 $error = '';
@@ -168,6 +189,8 @@ if ( $http->hasPostVariable( 'SetupButton' ) )
                     $changed = $helper->saveUserData( $userID, $data );
                     $helper->removeEnrolmentSecret( $userID );
                     sevenxAuthentication2faHelper::authLog( '2fa_setup_totp_ok', 'totp configured and verified', $userID );
+                    if ( $changed )
+                        $recoveryCodes = $helper->issueRecoveryCodes( $userID, $data );
                     $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'TOTP configured successfully.' );
                 }
                 else
@@ -210,6 +233,37 @@ if ( $http->hasPostVariable( 'SetupButton' ) )
         }
     }
 }
+elseif ( $http->hasPostVariable( 'LaterButton' ) && $isPendingSetup )
+{
+    // "Set up later" while the grace period lasts: signs in without a second step this time
+    if ( $graceLeft > 0 )
+    {
+        $redirect = sevenxAuthentication2faHelper::normalizeRedirect( $pendingSetup['redirect'] );
+        $helper->removeSetup();
+        $helper->removeEnrolmentSecret( $userID );
+        sevenxAuthentication2faHelper::authLog( '2fa_setup_postponed', 'grace seconds left=' . $graceLeft, $userID );
+        eZsevenxUser2faUser::completeLogin( $setupUser );
+        return $Module->redirectTo( $redirect );
+    }
+    $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'The time to set this up later has run out. Set up a second step now to sign in.' );
+}
+elseif ( $http->hasPostVariable( 'RecoveryButton' ) && !$isPendingSetup )
+{
+    // New recovery codes for a confirmed authenticator, confirmed with its current code; the old ones stop working
+    $result = $activeTotp ? $confirm( $postedString( 'Code' ) ) : 'missing';
+    if ( !$activeTotp )
+        $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Recovery codes belong to an authenticator app. Set one up first.' );
+    elseif ( $result !== true )
+        $error = $confirmError( $result );
+    else
+    {
+        $recoveryCodes = $helper->issueRecoveryCodes( $userID, $data );
+        if ( $recoveryCodes )
+            $success = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'New recovery codes were made. The old ones no longer work.' );
+        else
+            $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'No recovery codes could be made.' );
+    }
+}
 elseif ( $http->hasPostVariable( 'ResetButton' ) )
 {
     $result = $activeTotp ? $confirm( $postedString( 'Code' ) ) : true;
@@ -244,6 +298,12 @@ if ( $isPendingSetup && $changed && $data->isActive() )
     $helper->removeSetup();
     sevenxAuthentication2faHelper::authLog( '2fa_setup_completed_login', '', $userID );
     eZsevenxUser2faUser::completeLogin( $setupUser );
+    if ( $recoveryCodes )
+    {
+        // Signed in now: the setup page shows the recovery codes once, then continues to where the sign-in was going
+        $http->setSessionVariable( 'Sevenx2FA_ShowRecovery', array( 'user_id' => $userID, 'codes' => $recoveryCodes, 'redirect' => $redirect ) );
+        return $Module->redirectTo( '/user2fa/setup' );
+    }
     return $Module->redirectTo( $redirect );
 }
 
@@ -276,6 +336,12 @@ $tpl->setVariable( 'qr_code', $qrCode );
 $tpl->setVariable( 'error', $error );
 $tpl->setVariable( 'success', $success );
 $tpl->setVariable( 'is_enforced', $isEnforced );
+$tpl->setVariable( 'grace_days_left', $graceLeft > 0 ? (int)ceil( $graceLeft / 86400 ) : 0 );
+$tpl->setVariable( 'recovery_codes', $recoveryCodes );
+$tpl->setVariable( 'recovery_codes_left', $data->isActive() && $data->method() === sevenxAuthentication2faHelper::METHOD_TOTP
+    ? sevenxAuthentication2faPolicy::recoveryCodesLeft( $data->recovery() ) : 0 );
+$tpl->setVariable( 'recovery_enabled', $helper->recoveryCodeCount() > 0 );
+$tpl->setVariable( 'continue_url', $continueURL );
 $tpl->setVariable( 'is_pending_setup', $isPendingSetup );
 $tpl->setVariable( 'needs_confirmation', $activeTotp );
 $tpl->setVariable( 'issuer', $issuer );

@@ -80,7 +80,7 @@ class sevenxAuthentication2faType extends eZDataType
         // What the attribute holds now (the draft): a confirmed configuration, an enrolment, or nothing
         $current = sevenxAuthentication2fa::fromJson( $contentObjectAttribute->attribute( 'data_text' ) );
 
-        if ( $method === 'disabled' && $helper->isEnforced() )
+        if ( $method === 'disabled' && $helper->isEnforcedFor( (int)$contentObjectAttribute->attribute( 'contentobject_id' ) ) )
         {
             $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Two-factor authentication is required. Please choose an authentication method.' );
             return $current;
@@ -135,7 +135,10 @@ class sevenxAuthentication2faType extends eZDataType
         // The account name an authenticator app shows for an enrolment: the user's e-mail address or login
         $user = eZUser::fetch( (int)$contentObjectAttribute->attribute( 'contentobject_id' ) );
         if ( $user instanceof eZUser )
+        {
             $data->setAccount( $user->attribute( 'email' ) ? $user->attribute( 'email' ) : $user->attribute( 'login' ) );
+            $data->setEnforced( sevenxAuthentication2faHelper::instance()->isEnforcedFor( $user ) );
+        }
         return $data;
     }
 

@@ -235,3 +235,7 @@ html[data-a4-theme="dark"] body.a4-login-page .exp-2fa .exp-2fa-icon { backgroun
 .exp-2fa-field .exp-2fa-field-key p { margin: 0 0 .3em; }
 .exp-2fa-field .exp-2fa-field-key p.exp-2fa-field-secret { margin: 0 0 1em; }
 .exp-2fa-field .exp-2fa-field-secret code { font-size: 1.05em; letter-spacing: .06em; overflow-wrap: anywhere; }
+
+/* Recovery codes, shown once after an authenticator was set up (user2fa/setup) */
+.exp-2fa .exp-recovery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px 14px; margin: 10px 0 14px; padding: 12px 14px; list-style: none; border: 1px dashed var(--tf-field-line); border-radius: 8px; background: var(--tf-soft); }
+.exp-2fa .exp-recovery li { margin: 0; font: 600 15px/1.6 var(--tf-mono); letter-spacing: .06em; color: var(--tf-ink); user-select: all; }

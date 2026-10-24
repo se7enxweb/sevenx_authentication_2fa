@@ -110,10 +110,19 @@ else
             $data = $helper->userData( $userID );
             if ( $data && $data->isActive() && $data->method() === sevenxAuthentication2faHelper::METHOD_TOTP )
             {
-                $step = $helper->matchTotp( $data->secret(), $submittedCode, $data->lastStep() );
-                $valid = $step !== false;
-                if ( !$valid && $helper->matchTotp( $data->secret(), $submittedCode ) !== false )
-                    sevenxAuthentication2faHelper::authLog( '2fa_verify_replay', 'a code that was already used', $userID );
+                if ( sevenxAuthentication2faPolicy::looksLikeRecoveryCode( $submittedCode ) )
+                {
+                    // A recovery code in place of the app's code (lost phone); it is used up here
+                    $valid = $helper->useRecoveryCode( $userID, $submittedCode );
+                    $data = null;
+                }
+                else
+                {
+                    $step = $helper->matchTotp( $data->secret(), $submittedCode, $data->lastStep() );
+                    $valid = $step !== false;
+                    if ( !$valid && $helper->matchTotp( $data->secret(), $submittedCode ) !== false )
+                        sevenxAuthentication2faHelper::authLog( '2fa_verify_replay', 'a code that was already used', $userID );
+                }
             }
         }
         elseif ( $pending['method'] === sevenxAuthentication2faHelper::METHOD_EMAIL )
@@ -177,6 +186,14 @@ $resendWait = $pending && $pending['method'] === sevenxAuthentication2faHelper::
     ? sevenxAuthentication2faAttempts::resendWait( $pending, $limits['resend_interval'], $limits['max_resends'], time() ) : -1;
 $tpl->setVariable( 'resend_wait', $resendWait );
 $tpl->setVariable( 'can_resend', $resendWait >= 0 );
+// The page mentions recovery codes when this user has some left
+$recoveryLeft = 0;
+if ( $pending && $user instanceof eZUser && $pending['method'] === sevenxAuthentication2faHelper::METHOD_TOTP )
+{
+    $recoveryData = $helper->userData( (int)$user->attribute( 'contentobject_id' ) );
+    $recoveryLeft = $recoveryData ? sevenxAuthentication2faPolicy::recoveryCodesLeft( $recoveryData->recovery() ) : 0;
+}
+$tpl->setVariable( 'recovery_codes_left', $recoveryLeft );
 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:user2fa/verify.tpl' );

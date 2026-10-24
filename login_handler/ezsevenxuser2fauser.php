@@ -23,8 +23,11 @@
   does. Otherwise the user is NOT signed in: the session only remembers who
   passed the password (sevenxAuthentication2faHelper::SESSION_PENDING), and
   the browser goes to user2fa/verify, or to user2fa/setup when Enforce2FA asks
-  for a method first. Only a right code there signs the user in
-  (completeLogin(), which also starts a new session id).
+  this user for a method first (EnforcedGroups[], ExemptGroups[],
+  ExemptEmailDomains[]: sevenxAuthentication2faHelper::isEnforcedFor()).
+  Only a right code there signs the user in (completeLogin(), which also
+  starts a new session id); during a grace period (GracePeriodDays) the setup
+  page may also sign in without one ("Set up later").
 */
 class eZsevenxUser2faUser extends eZUser
 {
@@ -134,7 +137,7 @@ class eZsevenxUser2faUser extends eZUser
 
         if ( $method === sevenxAuthentication2faHelper::METHOD_DISABLED )
         {
-            if ( $helper->isEnforced() )
+            if ( $helper->isEnforcedFor( $user ) )
             {
                 sevenxAuthentication2faHelper::authLog( '2fa_enforced_setup_redirect', '', $userID );
                 return self::redirectToSetup( $user, $redirect );
@@ -217,6 +220,9 @@ class eZsevenxUser2faUser extends eZUser
     {
         $helper = sevenxAuthentication2faHelper::instance();
         $userID = (int)$user->attribute( 'contentobject_id' );
+        // The first time enforcement asks this user starts the grace period (GracePeriodDays)
+        if ( $helper->isEnforcedFor( $user ) )
+            $helper->markSetupAsked( $userID );
         $helper->startSetup( $userID, $redirect );
         sevenxAuthentication2faHelper::authLog( '2fa_setup_redirect', '', $userID );
         $url = 'user2fa/setup';
