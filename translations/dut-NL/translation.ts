@@ -631,5 +631,117 @@
         <source>Make new recovery codes</source>
         <translation>Nieuwe herstelcodes maken</translation>
     </message>
+    <message>
+        <source>App passwords are not available on this site.</source>
+        <translation>App-wachtwoorden zijn op deze website niet beschikbaar.</translation>
+    </message>
+    <message>
+        <source>App passwords belong to a second step. Set one up first.</source>
+        <translation>App-wachtwoorden horen bij een tweede stap. Stel die eerst in.</translation>
+    </message>
+    <message>
+        <source>You have as many app passwords as this site allows. Revoke one you no longer use first.</source>
+        <translation>U hebt zoveel app-wachtwoorden als deze website toestaat. Trek eerst een in dat u niet meer gebruikt.</translation>
+    </message>
+    <message>
+        <source>Choose where the app password may be used.</source>
+        <translation>Kies waar het app-wachtwoord gebruikt mag worden.</translation>
+    </message>
+    <message>
+        <source>The app password was made. Copy it now: it is shown only this once.</source>
+        <translation>Het app-wachtwoord is aangemaakt. Kopieer het nu: het wordt alleen deze ene keer getoond.</translation>
+    </message>
+    <message>
+        <source>The app password could not be stored.</source>
+        <translation>Het app-wachtwoord kon niet worden opgeslagen.</translation>
+    </message>
+    <message>
+        <source>That app password does not exist (any more).</source>
+        <translation>Dat app-wachtwoord bestaat niet (meer).</translation>
+    </message>
+    <message>
+        <source>The app password was revoked. Clients that use it can no longer sign in with it.</source>
+        <translation>Het app-wachtwoord is ingetrokken. Clients die het gebruiken, kunnen er niet meer mee inloggen.</translation>
+    </message>
+    <message>
+        <source>App passwords</source>
+        <translation>App-wachtwoorden</translation>
+    </message>
+    <message>
+        <source>For a WebDAV drive, a script or an app that signs in with a password and cannot ask for the second step. Each one works only where you allow it, and you can revoke it at any time.</source>
+        <translation>Voor een WebDAV-schijf, een script of een app die met een wachtwoord inlogt en niet om de tweede stap kan vragen. Elk werkt alleen waar u het toestaat, en u kunt het op elk moment intrekken.</translation>
+    </message>
+    <message>
+        <source>Your new app password for %name</source>
+        <translation>Uw nieuwe app-wachtwoord voor %name</translation>
+    </message>
+    <message>
+        <source>Type or paste it in place of your password in that client. Copy it now: it is shown only this once.</source>
+        <translation>Typ of plak het in die client in plaats van uw wachtwoord. Kopieer het nu: het wordt alleen deze ene keer getoond.</translation>
+    </message>
+    <message>
+        <source>REST interface</source>
+        <translation>REST-interface</translation>
+    </message>
+    <message>
+        <source>WebDAV</source>
+        <translation>WebDAV</translation>
+    </message>
+    <message>
+        <source>SOAP</source>
+        <translation>SOAP</translation>
+    </message>
+    <message>
+        <source>Made</source>
+        <translation>Aangemaakt</translation>
+    </message>
+    <message>
+        <source>Last used</source>
+        <translation>Laatst gebruikt</translation>
+    </message>
+    <message>
+        <source>Never used</source>
+        <translation>Nooit gebruikt</translation>
+    </message>
+    <message>
+        <source>Expired</source>
+        <translation>Verlopen</translation>
+    </message>
+    <message>
+        <source>Expires</source>
+        <translation>Verloopt op</translation>
+    </message>
+    <message>
+        <source>Works until revoked</source>
+        <translation>Geldig tot intrekking</translation>
+    </message>
+    <message>
+        <source>Revoke</source>
+        <translation>Intrekken</translation>
+    </message>
+    <message>
+        <source>No app passwords yet.</source>
+        <translation>Nog geen app-wachtwoorden.</translation>
+    </message>
+    <message>
+        <source>Make an app password</source>
+        <translation>App-wachtwoord aanmaken</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Naam</translation>
+    </message>
+    <message>
+        <source>Where it may be used</source>
+        <translation>Waar het gebruikt mag worden</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works for %days days.</source>
+        <translation>U kunt tot %count app-wachtwoorden hebben. Een nieuw wachtwoord geldt %days dagen.</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
+        <translation>U kunt tot %count app-wachtwoorden hebben. Een nieuw wachtwoord geldt tot u het intrekt.</translation>
+    </message>
 </context>
 </TS>

@@ -631,5 +631,117 @@
         <source>Make new recovery codes</source>
         <translation>Criar novos códigos de recuperação</translation>
     </message>
+    <message>
+        <source>App passwords are not available on this site.</source>
+        <translation>Senhas de app não estão disponíveis neste site.</translation>
+    </message>
+    <message>
+        <source>App passwords belong to a second step. Set one up first.</source>
+        <translation>Senhas de app pertencem a uma segunda etapa. Configure uma primeiro.</translation>
+    </message>
+    <message>
+        <source>You have as many app passwords as this site allows. Revoke one you no longer use first.</source>
+        <translation>Você já tem tantas senhas de app quanto este site permite. Revogue primeiro uma que não usa mais.</translation>
+    </message>
+    <message>
+        <source>Choose where the app password may be used.</source>
+        <translation>Escolha onde a senha de app pode ser usada.</translation>
+    </message>
+    <message>
+        <source>The app password was made. Copy it now: it is shown only this once.</source>
+        <translation>A senha de app foi criada. Copie-a agora: ela é mostrada só desta vez.</translation>
+    </message>
+    <message>
+        <source>The app password could not be stored.</source>
+        <translation>Não foi possível guardar a senha de app.</translation>
+    </message>
+    <message>
+        <source>That app password does not exist (any more).</source>
+        <translation>Essa senha de app não existe (mais).</translation>
+    </message>
+    <message>
+        <source>The app password was revoked. Clients that use it can no longer sign in with it.</source>
+        <translation>A senha de app foi revogada. Clientes que a usam não podem mais entrar com ela.</translation>
+    </message>
+    <message>
+        <source>App passwords</source>
+        <translation>Senhas de app</translation>
+    </message>
+    <message>
+        <source>For a WebDAV drive, a script or an app that signs in with a password and cannot ask for the second step. Each one works only where you allow it, and you can revoke it at any time.</source>
+        <translation>Para um drive WebDAV, um script ou um app que entra com senha e não consegue pedir a segunda etapa. Cada uma só funciona onde você permitir, e você pode revogá-la a qualquer momento.</translation>
+    </message>
+    <message>
+        <source>Your new app password for %name</source>
+        <translation>Sua nova senha de app para %name</translation>
+    </message>
+    <message>
+        <source>Type or paste it in place of your password in that client. Copy it now: it is shown only this once.</source>
+        <translation>Digite ou cole-a no lugar da sua senha nesse cliente. Copie-a agora: ela é mostrada só desta vez.</translation>
+    </message>
+    <message>
+        <source>REST interface</source>
+        <translation>Interface REST</translation>
+    </message>
+    <message>
+        <source>WebDAV</source>
+        <translation>WebDAV</translation>
+    </message>
+    <message>
+        <source>SOAP</source>
+        <translation>SOAP</translation>
+    </message>
+    <message>
+        <source>Made</source>
+        <translation>Criada</translation>
+    </message>
+    <message>
+        <source>Last used</source>
+        <translation>Último uso</translation>
+    </message>
+    <message>
+        <source>Never used</source>
+        <translation>Nunca usada</translation>
+    </message>
+    <message>
+        <source>Expired</source>
+        <translation>Expirada</translation>
+    </message>
+    <message>
+        <source>Expires</source>
+        <translation>Expira em</translation>
+    </message>
+    <message>
+        <source>Works until revoked</source>
+        <translation>Vale até ser revogada</translation>
+    </message>
+    <message>
+        <source>Revoke</source>
+        <translation>Revogar</translation>
+    </message>
+    <message>
+        <source>No app passwords yet.</source>
+        <translation>Nenhuma senha de app ainda.</translation>
+    </message>
+    <message>
+        <source>Make an app password</source>
+        <translation>Criar uma senha de app</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Nome</translation>
+    </message>
+    <message>
+        <source>Where it may be used</source>
+        <translation>Onde pode ser usada</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works for %days days.</source>
+        <translation>Você pode ter até %count senhas de app. Uma nova vale por %days dias.</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
+        <translation>Você pode ter até %count senhas de app. Uma nova vale até você revogá-la.</translation>
+    </message>
 </context>
 </TS>

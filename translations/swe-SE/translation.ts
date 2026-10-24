@@ -631,5 +631,117 @@
         <source>Make new recovery codes</source>
         <translation>Skapa nya återställningskoder</translation>
     </message>
+    <message>
+        <source>App passwords are not available on this site.</source>
+        <translation>Applösenord är inte tillgängliga på den här webbplatsen.</translation>
+    </message>
+    <message>
+        <source>App passwords belong to a second step. Set one up first.</source>
+        <translation>Applösenord hör till ett andra steg. Konfigurera ett först.</translation>
+    </message>
+    <message>
+        <source>You have as many app passwords as this site allows. Revoke one you no longer use first.</source>
+        <translation>Du har så många applösenord som den här webbplatsen tillåter. Återkalla först ett som du inte längre använder.</translation>
+    </message>
+    <message>
+        <source>Choose where the app password may be used.</source>
+        <translation>Välj var applösenordet får användas.</translation>
+    </message>
+    <message>
+        <source>The app password was made. Copy it now: it is shown only this once.</source>
+        <translation>Applösenordet har skapats. Kopiera det nu: det visas bara den här gången.</translation>
+    </message>
+    <message>
+        <source>The app password could not be stored.</source>
+        <translation>Applösenordet kunde inte sparas.</translation>
+    </message>
+    <message>
+        <source>That app password does not exist (any more).</source>
+        <translation>Det applösenordet finns inte (längre).</translation>
+    </message>
+    <message>
+        <source>The app password was revoked. Clients that use it can no longer sign in with it.</source>
+        <translation>Applösenordet har återkallats. Klienter som använder det kan inte längre logga in med det.</translation>
+    </message>
+    <message>
+        <source>App passwords</source>
+        <translation>Applösenord</translation>
+    </message>
+    <message>
+        <source>For a WebDAV drive, a script or an app that signs in with a password and cannot ask for the second step. Each one works only where you allow it, and you can revoke it at any time.</source>
+        <translation>För en WebDAV-enhet, ett skript eller en app som loggar in med lösenord och inte kan fråga efter det andra steget. Vart och ett fungerar bara där du tillåter det, och du kan återkalla det när som helst.</translation>
+    </message>
+    <message>
+        <source>Your new app password for %name</source>
+        <translation>Ditt nya applösenord för %name</translation>
+    </message>
+    <message>
+        <source>Type or paste it in place of your password in that client. Copy it now: it is shown only this once.</source>
+        <translation>Skriv eller klistra in det i stället för ditt lösenord i den klienten. Kopiera det nu: det visas bara den här gången.</translation>
+    </message>
+    <message>
+        <source>REST interface</source>
+        <translation>REST-gränssnitt</translation>
+    </message>
+    <message>
+        <source>WebDAV</source>
+        <translation>WebDAV</translation>
+    </message>
+    <message>
+        <source>SOAP</source>
+        <translation>SOAP</translation>
+    </message>
+    <message>
+        <source>Made</source>
+        <translation>Skapat</translation>
+    </message>
+    <message>
+        <source>Last used</source>
+        <translation>Senast använt</translation>
+    </message>
+    <message>
+        <source>Never used</source>
+        <translation>Aldrig använt</translation>
+    </message>
+    <message>
+        <source>Expired</source>
+        <translation>Har gått ut</translation>
+    </message>
+    <message>
+        <source>Expires</source>
+        <translation>Går ut</translation>
+    </message>
+    <message>
+        <source>Works until revoked</source>
+        <translation>Gäller tills det återkallas</translation>
+    </message>
+    <message>
+        <source>Revoke</source>
+        <translation>Återkalla</translation>
+    </message>
+    <message>
+        <source>No app passwords yet.</source>
+        <translation>Inga applösenord ännu.</translation>
+    </message>
+    <message>
+        <source>Make an app password</source>
+        <translation>Skapa ett applösenord</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Namn</translation>
+    </message>
+    <message>
+        <source>Where it may be used</source>
+        <translation>Var det får användas</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works for %days days.</source>
+        <translation>Du kan ha upp till %count applösenord. Ett nytt gäller i %days dagar.</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
+        <translation>Du kan ha upp till %count applösenord. Ett nytt gäller tills du återkallar det.</translation>
+    </message>
 </context>
 </TS>

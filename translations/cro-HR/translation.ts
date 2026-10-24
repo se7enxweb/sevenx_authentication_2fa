@@ -631,5 +631,117 @@
         <source>Make new recovery codes</source>
         <translation>Izradi nove kodove za oporavak</translation>
     </message>
+    <message>
+        <source>App passwords are not available on this site.</source>
+        <translation>Lozinke za aplikacije nisu dostupne na ovom webu.</translation>
+    </message>
+    <message>
+        <source>App passwords belong to a second step. Set one up first.</source>
+        <translation>Lozinke za aplikacije pripadaju drugom koraku. Najprije ga postavite.</translation>
+    </message>
+    <message>
+        <source>You have as many app passwords as this site allows. Revoke one you no longer use first.</source>
+        <translation>Imate onoliko lozinki za aplikacije koliko ovaj web dopušta. Najprije opozovite jednu koju više ne koristite.</translation>
+    </message>
+    <message>
+        <source>Choose where the app password may be used.</source>
+        <translation>Odaberite gdje se lozinka za aplikaciju smije koristiti.</translation>
+    </message>
+    <message>
+        <source>The app password was made. Copy it now: it is shown only this once.</source>
+        <translation>Lozinka za aplikaciju je izrađena. Kopirajte je sada: prikazuje se samo ovaj put.</translation>
+    </message>
+    <message>
+        <source>The app password could not be stored.</source>
+        <translation>Lozinku za aplikaciju nije bilo moguće spremiti.</translation>
+    </message>
+    <message>
+        <source>That app password does not exist (any more).</source>
+        <translation>Ta lozinka za aplikaciju ne postoji (više).</translation>
+    </message>
+    <message>
+        <source>The app password was revoked. Clients that use it can no longer sign in with it.</source>
+        <translation>Lozinka za aplikaciju je opozvana. Klijenti koji je koriste više se njome ne mogu prijaviti.</translation>
+    </message>
+    <message>
+        <source>App passwords</source>
+        <translation>Lozinke za aplikacije</translation>
+    </message>
+    <message>
+        <source>For a WebDAV drive, a script or an app that signs in with a password and cannot ask for the second step. Each one works only where you allow it, and you can revoke it at any time.</source>
+        <translation>Za WebDAV pogon, skriptu ili aplikaciju koja se prijavljuje lozinkom i ne može tražiti drugi korak. Svaka radi samo tamo gdje dopustite i možete je opozvati u bilo kojem trenutku.</translation>
+    </message>
+    <message>
+        <source>Your new app password for %name</source>
+        <translation>Vaša nova lozinka za aplikaciju za %name</translation>
+    </message>
+    <message>
+        <source>Type or paste it in place of your password in that client. Copy it now: it is shown only this once.</source>
+        <translation>Upišite ili zalijepite je umjesto svoje lozinke u tom klijentu. Kopirajte je sada: prikazuje se samo ovaj put.</translation>
+    </message>
+    <message>
+        <source>REST interface</source>
+        <translation>REST sučelje</translation>
+    </message>
+    <message>
+        <source>WebDAV</source>
+        <translation>WebDAV</translation>
+    </message>
+    <message>
+        <source>SOAP</source>
+        <translation>SOAP</translation>
+    </message>
+    <message>
+        <source>Made</source>
+        <translation>Izrađena</translation>
+    </message>
+    <message>
+        <source>Last used</source>
+        <translation>Zadnje korištena</translation>
+    </message>
+    <message>
+        <source>Never used</source>
+        <translation>Nikad korištena</translation>
+    </message>
+    <message>
+        <source>Expired</source>
+        <translation>Istekla</translation>
+    </message>
+    <message>
+        <source>Expires</source>
+        <translation>Istječe</translation>
+    </message>
+    <message>
+        <source>Works until revoked</source>
+        <translation>Vrijedi dok se ne opozove</translation>
+    </message>
+    <message>
+        <source>Revoke</source>
+        <translation>Opozovi</translation>
+    </message>
+    <message>
+        <source>No app passwords yet.</source>
+        <translation>Još nema lozinki za aplikacije.</translation>
+    </message>
+    <message>
+        <source>Make an app password</source>
+        <translation>Izradi lozinku za aplikaciju</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Naziv</translation>
+    </message>
+    <message>
+        <source>Where it may be used</source>
+        <translation>Gdje se smije koristiti</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works for %days days.</source>
+        <translation>Možete imati do %count lozinki za aplikacije. Nova vrijedi %days dana.</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
+        <translation>Možete imati do %count lozinki za aplikacije. Nova vrijedi dok je ne opozovete.</translation>
+    </message>
 </context>
 </TS>

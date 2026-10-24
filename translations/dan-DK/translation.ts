@@ -631,5 +631,117 @@
         <source>Make new recovery codes</source>
         <translation>Lav nye gendannelseskoder</translation>
     </message>
+    <message>
+        <source>App passwords are not available on this site.</source>
+        <translation>App-adgangskoder er ikke tilgængelige på dette websted.</translation>
+    </message>
+    <message>
+        <source>App passwords belong to a second step. Set one up first.</source>
+        <translation>App-adgangskoder hører til et andet trin. Opsæt et først.</translation>
+    </message>
+    <message>
+        <source>You have as many app passwords as this site allows. Revoke one you no longer use first.</source>
+        <translation>Du har så mange app-adgangskoder, som dette websted tillader. Tilbagekald først en, du ikke længere bruger.</translation>
+    </message>
+    <message>
+        <source>Choose where the app password may be used.</source>
+        <translation>Vælg, hvor app-adgangskoden må bruges.</translation>
+    </message>
+    <message>
+        <source>The app password was made. Copy it now: it is shown only this once.</source>
+        <translation>App-adgangskoden er oprettet. Kopiér den nu: den vises kun denne ene gang.</translation>
+    </message>
+    <message>
+        <source>The app password could not be stored.</source>
+        <translation>App-adgangskoden kunne ikke gemmes.</translation>
+    </message>
+    <message>
+        <source>That app password does not exist (any more).</source>
+        <translation>Den app-adgangskode findes ikke (længere).</translation>
+    </message>
+    <message>
+        <source>The app password was revoked. Clients that use it can no longer sign in with it.</source>
+        <translation>App-adgangskoden er tilbagekaldt. Klienter, der bruger den, kan ikke længere logge ind med den.</translation>
+    </message>
+    <message>
+        <source>App passwords</source>
+        <translation>App-adgangskoder</translation>
+    </message>
+    <message>
+        <source>For a WebDAV drive, a script or an app that signs in with a password and cannot ask for the second step. Each one works only where you allow it, and you can revoke it at any time.</source>
+        <translation>Til et WebDAV-drev, et script eller en app, der logger ind med en adgangskode og ikke kan bede om det andet trin. Hver virker kun dér, hvor du tillader det, og du kan tilbagekalde den når som helst.</translation>
+    </message>
+    <message>
+        <source>Your new app password for %name</source>
+        <translation>Din nye app-adgangskode til %name</translation>
+    </message>
+    <message>
+        <source>Type or paste it in place of your password in that client. Copy it now: it is shown only this once.</source>
+        <translation>Skriv eller indsæt den i stedet for din adgangskode i den klient. Kopiér den nu: den vises kun denne ene gang.</translation>
+    </message>
+    <message>
+        <source>REST interface</source>
+        <translation>REST-grænseflade</translation>
+    </message>
+    <message>
+        <source>WebDAV</source>
+        <translation>WebDAV</translation>
+    </message>
+    <message>
+        <source>SOAP</source>
+        <translation>SOAP</translation>
+    </message>
+    <message>
+        <source>Made</source>
+        <translation>Oprettet</translation>
+    </message>
+    <message>
+        <source>Last used</source>
+        <translation>Sidst brugt</translation>
+    </message>
+    <message>
+        <source>Never used</source>
+        <translation>Aldrig brugt</translation>
+    </message>
+    <message>
+        <source>Expired</source>
+        <translation>Udløbet</translation>
+    </message>
+    <message>
+        <source>Expires</source>
+        <translation>Udløber</translation>
+    </message>
+    <message>
+        <source>Works until revoked</source>
+        <translation>Gælder indtil tilbagekaldelse</translation>
+    </message>
+    <message>
+        <source>Revoke</source>
+        <translation>Tilbagekald</translation>
+    </message>
+    <message>
+        <source>No app passwords yet.</source>
+        <translation>Ingen app-adgangskoder endnu.</translation>
+    </message>
+    <message>
+        <source>Make an app password</source>
+        <translation>Opret en app-adgangskode</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Navn</translation>
+    </message>
+    <message>
+        <source>Where it may be used</source>
+        <translation>Hvor den må bruges</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works for %days days.</source>
+        <translation>Du kan have op til %count app-adgangskoder. En ny gælder i %days dage.</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
+        <translation>Du kan have op til %count app-adgangskoder. En ny gælder, indtil du tilbagekalder den.</translation>
+    </message>
 </context>
 </TS>

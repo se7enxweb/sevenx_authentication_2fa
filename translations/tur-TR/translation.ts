@@ -631,5 +631,117 @@
         <source>Make new recovery codes</source>
         <translation>Yeni kurtarma kodları oluştur</translation>
     </message>
+    <message>
+        <source>App passwords are not available on this site.</source>
+        <translation>Uygulama şifreleri bu sitede kullanılamıyor.</translation>
+    </message>
+    <message>
+        <source>App passwords belong to a second step. Set one up first.</source>
+        <translation>Uygulama şifreleri ikinci bir adıma bağlıdır. Önce bir tane kurun.</translation>
+    </message>
+    <message>
+        <source>You have as many app passwords as this site allows. Revoke one you no longer use first.</source>
+        <translation>Bu sitenin izin verdiği kadar uygulama şifreniz var. Önce artık kullanmadığınız birini iptal edin.</translation>
+    </message>
+    <message>
+        <source>Choose where the app password may be used.</source>
+        <translation>Uygulama şifresinin nerede kullanılabileceğini seçin.</translation>
+    </message>
+    <message>
+        <source>The app password was made. Copy it now: it is shown only this once.</source>
+        <translation>Uygulama şifresi oluşturuldu. Şimdi kopyalayın: yalnızca bu kez gösterilir.</translation>
+    </message>
+    <message>
+        <source>The app password could not be stored.</source>
+        <translation>Uygulama şifresi kaydedilemedi.</translation>
+    </message>
+    <message>
+        <source>That app password does not exist (any more).</source>
+        <translation>Bu uygulama şifresi (artık) yok.</translation>
+    </message>
+    <message>
+        <source>The app password was revoked. Clients that use it can no longer sign in with it.</source>
+        <translation>Uygulama şifresi iptal edildi. Onu kullanan istemciler artık bununla oturum açamaz.</translation>
+    </message>
+    <message>
+        <source>App passwords</source>
+        <translation>Uygulama şifreleri</translation>
+    </message>
+    <message>
+        <source>For a WebDAV drive, a script or an app that signs in with a password and cannot ask for the second step. Each one works only where you allow it, and you can revoke it at any time.</source>
+        <translation>Parolayla oturum açan ve ikinci adımı soramayan bir WebDAV sürücüsü, betik veya uygulama için. Her biri yalnızca izin verdiğiniz yerde çalışır ve istediğiniz zaman iptal edebilirsiniz.</translation>
+    </message>
+    <message>
+        <source>Your new app password for %name</source>
+        <translation>%name için yeni uygulama şifreniz</translation>
+    </message>
+    <message>
+        <source>Type or paste it in place of your password in that client. Copy it now: it is shown only this once.</source>
+        <translation>O istemcide şifreniz yerine bunu yazın veya yapıştırın. Şimdi kopyalayın: yalnızca bu kez gösterilir.</translation>
+    </message>
+    <message>
+        <source>REST interface</source>
+        <translation>REST arayüzü</translation>
+    </message>
+    <message>
+        <source>WebDAV</source>
+        <translation>WebDAV</translation>
+    </message>
+    <message>
+        <source>SOAP</source>
+        <translation>SOAP</translation>
+    </message>
+    <message>
+        <source>Made</source>
+        <translation>Oluşturuldu</translation>
+    </message>
+    <message>
+        <source>Last used</source>
+        <translation>Son kullanım</translation>
+    </message>
+    <message>
+        <source>Never used</source>
+        <translation>Hiç kullanılmadı</translation>
+    </message>
+    <message>
+        <source>Expired</source>
+        <translation>Süresi doldu</translation>
+    </message>
+    <message>
+        <source>Expires</source>
+        <translation>Sona erme</translation>
+    </message>
+    <message>
+        <source>Works until revoked</source>
+        <translation>İptal edilene kadar geçerli</translation>
+    </message>
+    <message>
+        <source>Revoke</source>
+        <translation>İptal et</translation>
+    </message>
+    <message>
+        <source>No app passwords yet.</source>
+        <translation>Henüz uygulama şifresi yok.</translation>
+    </message>
+    <message>
+        <source>Make an app password</source>
+        <translation>Uygulama şifresi oluştur</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Ad</translation>
+    </message>
+    <message>
+        <source>Where it may be used</source>
+        <translation>Nerede kullanılabileceği</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works for %days days.</source>
+        <translation>En fazla %count uygulama şifreniz olabilir. Yeni bir şifre %days gün geçerlidir.</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
+        <translation>En fazla %count uygulama şifreniz olabilir. Yeni bir şifre siz iptal edene kadar geçerlidir.</translation>
+    </message>
 </context>
 </TS>

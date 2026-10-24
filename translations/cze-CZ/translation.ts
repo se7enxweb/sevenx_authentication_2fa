@@ -631,5 +631,117 @@
         <source>Make new recovery codes</source>
         <translation>Vytvořit nové záložní kódy</translation>
     </message>
+    <message>
+        <source>App passwords are not available on this site.</source>
+        <translation>Hesla aplikací nejsou na tomto webu k dispozici.</translation>
+    </message>
+    <message>
+        <source>App passwords belong to a second step. Set one up first.</source>
+        <translation>Hesla aplikací patří k druhému kroku. Nejprve ho nastavte.</translation>
+    </message>
+    <message>
+        <source>You have as many app passwords as this site allows. Revoke one you no longer use first.</source>
+        <translation>Máte tolik hesel aplikací, kolik tento web dovoluje. Nejprve zrušte jedno, které už nepoužíváte.</translation>
+    </message>
+    <message>
+        <source>Choose where the app password may be used.</source>
+        <translation>Zvolte, kde se smí heslo aplikace používat.</translation>
+    </message>
+    <message>
+        <source>The app password was made. Copy it now: it is shown only this once.</source>
+        <translation>Heslo aplikace bylo vytvořeno. Zkopírujte si ho hned: zobrazí se jen tentokrát.</translation>
+    </message>
+    <message>
+        <source>The app password could not be stored.</source>
+        <translation>Heslo aplikace se nepodařilo uložit.</translation>
+    </message>
+    <message>
+        <source>That app password does not exist (any more).</source>
+        <translation>Toto heslo aplikace (už) neexistuje.</translation>
+    </message>
+    <message>
+        <source>The app password was revoked. Clients that use it can no longer sign in with it.</source>
+        <translation>Heslo aplikace bylo zrušeno. Klienti, kteří ho používají, se jím už nepřihlásí.</translation>
+    </message>
+    <message>
+        <source>App passwords</source>
+        <translation>Hesla aplikací</translation>
+    </message>
+    <message>
+        <source>For a WebDAV drive, a script or an app that signs in with a password and cannot ask for the second step. Each one works only where you allow it, and you can revoke it at any time.</source>
+        <translation>Pro disk WebDAV, skript nebo aplikaci, která se přihlašuje heslem a neumí se zeptat na druhý krok. Každé funguje jen tam, kde to povolíte, a můžete ho kdykoli zrušit.</translation>
+    </message>
+    <message>
+        <source>Your new app password for %name</source>
+        <translation>Vaše nové heslo aplikace pro %name</translation>
+    </message>
+    <message>
+        <source>Type or paste it in place of your password in that client. Copy it now: it is shown only this once.</source>
+        <translation>Zadejte nebo vložte ho v tom klientovi místo svého hesla. Zkopírujte si ho hned: zobrazí se jen tentokrát.</translation>
+    </message>
+    <message>
+        <source>REST interface</source>
+        <translation>Rozhraní REST</translation>
+    </message>
+    <message>
+        <source>WebDAV</source>
+        <translation>WebDAV</translation>
+    </message>
+    <message>
+        <source>SOAP</source>
+        <translation>SOAP</translation>
+    </message>
+    <message>
+        <source>Made</source>
+        <translation>Vytvořeno</translation>
+    </message>
+    <message>
+        <source>Last used</source>
+        <translation>Naposledy použito</translation>
+    </message>
+    <message>
+        <source>Never used</source>
+        <translation>Nikdy nepoužito</translation>
+    </message>
+    <message>
+        <source>Expired</source>
+        <translation>Vypršelo</translation>
+    </message>
+    <message>
+        <source>Expires</source>
+        <translation>Vyprší</translation>
+    </message>
+    <message>
+        <source>Works until revoked</source>
+        <translation>Platí do zrušení</translation>
+    </message>
+    <message>
+        <source>Revoke</source>
+        <translation>Zrušit</translation>
+    </message>
+    <message>
+        <source>No app passwords yet.</source>
+        <translation>Zatím žádná hesla aplikací.</translation>
+    </message>
+    <message>
+        <source>Make an app password</source>
+        <translation>Vytvořit heslo aplikace</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Název</translation>
+    </message>
+    <message>
+        <source>Where it may be used</source>
+        <translation>Kde se smí používat</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works for %days days.</source>
+        <translation>Můžete mít až %count hesel aplikací. Nové platí %days dní.</translation>
+    </message>
+    <message>
+        <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
+        <translation>Můžete mít až %count hesel aplikací. Nové platí, dokud ho nezrušíte.</translation>
+    </message>
 </context>
 </TS>
