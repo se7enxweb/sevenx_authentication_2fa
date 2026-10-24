@@ -99,18 +99,25 @@ on the server. See README.md, "Recovery codes and a lost phone".
 
 On Exponential 6.0.15 and later the extension's `settings/site.ini.append.php`
 registers `sevenxAuthentication2faSignIn` in `site.ini
-[SignInSecondFactorSettings] Handlers[]`. With `Enforce2FA` on, the accounts
-it applies to can no longer sign in with their password alone through REST
-basic authentication, WebDAV, SOAP or the expservices login. Before switching
-it on (or updating to this version on a site where it is on):
+[SignInSecondFactorSettings] Handlers[]`. By default it guards no path:
+`[OtherSignInPaths] Guard[]` is empty, so REST (basic authentication, API
+keys, OAuth), SOAP, WebDAV and the expservices login sign an enforced account
+in with its password alone, exactly as before, and the setup page shows no
+app passwords. Updating to this version changes nothing until a path is
+listed.
 
-1. List the clients that sign in as an enforced account through those paths
-   (WebDAV drives, scripts, mobile apps, monitoring).
-2. Give each one an app password: the account owner opens `/user2fa/setup`,
-   section "App passwords", names it, ticks REST, WebDAV or SOAP and confirms
-   with a current code; the client then uses it in place of the password.
-   REST clients may use a personal API key or OAuth instead; expservices
-   clients send the field `otp` with the authenticator code.
+To guard a path (one line each in
+`settings/override/sevenxauthentication2fa.ini.append.php`, `[OtherSignInPaths]`:
+`Guard[]=expservices`, `Guard[]=webdav`, `Guard[]=rest`, `Guard[]=soap`):
+
+1. List the clients that sign in as an enforced account through that path
+   (expservices scripts, WebDAV drives, REST or SOAP clients).
+2. Give each REST, WebDAV or SOAP client an app password: the account owner
+   opens `/user2fa/setup`, section "App passwords" (shown once a path is
+   guarded), names it, ticks the path (only guarded paths are offered) and
+   confirms with a current code; the client then uses it in place of the
+   password. REST clients may use a personal API key or OAuth instead;
+   expservices clients send the field `otp` with the authenticator code.
 3. Accounts of automated checks that must keep a password-only sign-in are
    exempted (`ExemptEmailDomains[]`, `ExemptGroups[]`), as for the web login.
 4. Clear the INI cache and reload PHP (PHP-FPM, and restart Exponential
@@ -118,8 +125,7 @@ it on (or updating to this version on a site where it is on):
 
 The settings are `[OtherSignInPaths]` and `[AppPasswords]` in
 `sevenxauthentication2fa.ini` (see README.md, "Sign-ins outside the web login
-form"). `[OtherSignInPaths] Guard=disabled` restores the old behaviour; it is
-not recommended.
+form"). Removing a path from `Guard[]` restores the old behaviour there.
 
 ### E-mail OTP behaviour
 

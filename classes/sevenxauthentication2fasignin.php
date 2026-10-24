@@ -24,13 +24,16 @@
   - checkSignIn(): for an account Enforce2FA applies to (and, with
     [OtherSignInPaths] GuardOptedIn=enabled, one that chose a second step
     itself), a password alone is refused on the guarded paths
-    (GuardedChannels[]). On the paths of CodeChannels[] (by default only the
+    ([OtherSignInPaths] Guard[]: empty by default, so every path signs in
+    with the password alone as before until a site lists rest, webdav, soap
+    or expservices there). On the paths of CodeChannels[] (by default only the
     expservices login, which makes a session) the current code of the
     authenticator app counts; each code works once, and MaxAttempts wrong
     codes lock it for CodeLockSeconds.
   - appPasswordUser(): an app password made on user2fa/setup signs its
-    account in on the paths it was made for (rest, webdav, soap only: they
-    never make a session the web interface would accept).
+    account in on the paths it was made for that are guarded (rest, webdav,
+    soap only: they never make a session the web interface would accept).
+    On a path that is not guarded it is never even looked at.
 
   Accounts Enforce2FA does not apply to (and exempt ones: ExemptGroups[],
   ExemptEmailDomains[]) are not touched. The decisions themselves are

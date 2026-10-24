@@ -39,11 +39,13 @@ installations with minimal dependencies, while remaining compatible with PHP 8.5
   limited per sign-in and count as failed logins of the account; e-mail codes
   are kept hashed; TOTP secrets can be encrypted at rest; every redirect target
   passes the safe redirect rules. See [Security](#security).
-- **The other sign-in paths** — on Exponential 6.0.15 and later REST with
-  basic authentication, WebDAV, SOAP and the expservices login refuse a
-  password alone for an enforced account; it uses an **app password** (made,
-  shown once and revoked on `user2fa/setup`, stored hashed, limited to the
-  paths chosen) or, on the expservices login, its authenticator code. See
+- **The other sign-in paths, opt-in** — on Exponential 6.0.15 and later a
+  site can make REST basic authentication, WebDAV, SOAP and the expservices
+  login refuse a password alone for an enforced account (`[OtherSignInPaths]
+  Guard[]`, empty by default: nothing changes until a path is listed). The
+  account then uses an **app password** (made, shown once and revoked on
+  `user2fa/setup`, stored hashed, limited to the paths chosen) or, on the
+  expservices login, its authenticator code. See
   [Sign-ins outside the web login form](#sign-ins-outside-the-web-login-form-app-passwords).
 - **On-model pages** — the second step, setup, social login answers and the
   2FA field are drawn in the look of the admin (admin4 light and dark, admin,
@@ -188,33 +190,42 @@ sign-in paths too (`site.ini [SignInSecondFactorSettings] Handlers[]`, which
 the REST interface with basic authentication (`rest`), WebDAV (`webdav`),
 SOAP (`soap`) and the expservices login (`expservices`).
 
-For an account `Enforce2FA` applies to, a password alone is refused there
-(REST `401` `second_factor_required`, or `403` `second_factor_setup_required`
-while it has no second step; WebDAV and SOAP `401` with `WWW-Authenticate` and
-`X-Exp-Sign-In-Refused`; expservices `401` with `error.reason`). Such an
-account signs in with:
+The extension guards only the paths listed in `[OtherSignInPaths] Guard[]`,
+which is **empty by default**: out of the box only the web login form asks for
+the second step, and REST (basic authentication, API keys, OAuth), SOAP,
+WebDAV and the expservices login sign an enforced account in with its
+password alone, as before. A site guards a path with one line each in
+`settings/override/sevenxauthentication2fa.ini.append.php`:
+`Guard[]=expservices` (its login makes a session the website accepts),
+`Guard[]=webdav`, `Guard[]=rest`, `Guard[]=soap`. The clients of a guarded
+path then need a second factor.
 
-- an **app password** on REST, WebDAV and SOAP: made by the user on
+For an account `Enforce2FA` applies to, a password alone is refused on a
+guarded path (expservices `401` with `error.reason`; WebDAV `401` with
+`WWW-Authenticate` and `X-Exp-Sign-In-Refused`; REST `401`
+`second_factor_required`, or `403` `second_factor_setup_required` while it has
+no second step; SOAP `401` with a SOAP fault). Such an account signs in with:
+
+- an **app password** on the guarded ones of REST, WebDAV and SOAP (the
+  setup page offers guarded paths only, and shows no app-password section
+  while none of them is guarded): made by the user on
   `user2fa/setup` (section "App passwords", confirmed with a current code),
   shown once, stored only as a salted hash in the account's two-factor field,
   limited to the paths ticked, revoked there at any time, and all revoked when
   the second step is removed or reset. It never signs in through the web
   login form or the expservices login and never makes a session;
-- the **current authenticator code** on the expservices login (POST field
-  `otp`, or the header `X-Exp-OTP`). Each code works once; `[Security]
-  MaxAttempts` wrong ones lock it for `CodeLockSeconds`;
-- on REST also a personal API key or an OAuth token (the OAuth authorization
-  code is issued after the web login, with the second step).
+- the **current authenticator code** on the expservices login, once it is
+  guarded (POST field `otp`, or the header `X-Exp-OTP`). Each code works once;
+  `[Security] MaxAttempts` wrong ones lock it for `CodeLockSeconds`;
+- on REST, once it is guarded, also a personal API key or an OAuth token (the
+  OAuth authorization code is issued after the web login, with the second
+  step).
 
 ```ini
 # settings/override/sevenxauthentication2fa.ini.append.php (the defaults)
 [OtherSignInPaths]
-Guard=enabled
-GuardedChannels[]
-GuardedChannels[]=rest
-GuardedChannels[]=webdav
-GuardedChannels[]=soap
-GuardedChannels[]=expservices
+# no path guarded; opt in one line each: Guard[]=expservices, =webdav, =rest, =soap
+Guard[]
 GuardOptedIn=disabled
 CodeChannels[]
 CodeChannels[]=expservices
@@ -239,9 +250,10 @@ recorded in the kernel's audit trail (`access.user.second_factor.refused`,
 `var/log/auth.log`. Guide in the kernel:
 `doc/eng-us/features/6.0/second-factor-on-other-sign-in-paths.md`.
 
-On a kernel older than 6.0.15 these paths still ask for a password only, as
-does code that calls `eZUser::loginUser()` directly: keep them off there, or
-limited to accounts that need no second step. A session that was signed in
+Paths that are not guarded (by default all of them), every path on a kernel
+older than 6.0.15, and code that calls `eZUser::loginUser()` directly ask for
+a password only: keep them off, or limited to accounts that need no second
+step, where that matters. A session that was signed in
 before enforcement was switched on stays signed in until it ends; the second
 step is asked at the next sign-in.
 

@@ -15,7 +15,8 @@ ExtensionDirectory[]=sevenx_authentication_2fa
 
 [SignInSecondFactorSettings]
 # The kernel asks this class on the sign-in paths outside the web login form (REST with
-# basic authentication, WebDAV, SOAP, the expservices login): whether a password alone
+# basic authentication, WebDAV, SOAP, the expservices login; it guards none of them
+# until sevenxauthentication2fa.ini [OtherSignInPaths] Guard[] lists it): whether a password alone
 # is enough, and whether a secret is an app password (sevenxauthentication2fa.ini
 # [OtherSignInPaths], [AppPasswords]). A kernel older than 6.0.15 has no such setting
 # and ignores it.

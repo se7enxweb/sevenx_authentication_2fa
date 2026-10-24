@@ -27,6 +27,33 @@ class OtherSignInPathsTest extends TestCase
         $this->assertNull( sevenxAuthentication2faPolicy::otherPathDecision( false, true, false, 'totp', false, null, null ) );
     }
 
+    public function testNoPathIsGuardedByDefault()
+    {
+        $defaults = sevenxAuthentication2faPolicy::DEFAULT_GUARDED_CHANNELS;
+        $this->assertSame( array(), $defaults );
+        foreach ( sevenxAuthentication2faPolicy::CHANNELS as $channel )
+        {
+            // an enforced account with a password alone: signed in on every path, as before
+            $guarded = in_array( $channel, $defaults, true );
+            $this->assertNull( sevenxAuthentication2faPolicy::otherPathDecision( $guarded, true, false, 'totp', true, null, null ), $channel );
+            // a site that lists the path in Guard[]: refused without a second factor
+            $optedIn = sevenxAuthentication2faPolicy::channelList( array( $channel ) );
+            $this->assertSame( 'second_factor_required',
+                               sevenxAuthentication2faPolicy::otherPathDecision( in_array( $channel, $optedIn, true ), true, false, 'totp', true, null, null ), $channel );
+        }
+    }
+
+    public function testAppPasswordsAreOfferedOnlyOnGuardedPaths()
+    {
+        $all = sevenxAuthentication2faPolicy::APP_PASSWORD_CHANNELS;
+        $this->assertSame( array(), sevenxAuthentication2faPolicy::appPasswordChoices( $all, sevenxAuthentication2faPolicy::DEFAULT_GUARDED_CHANNELS ),
+                           'by default none: the setup page shows no app passwords' );
+        $this->assertSame( array( 'webdav' ), sevenxAuthentication2faPolicy::appPasswordChoices( $all, array( 'webdav' ) ) );
+        $this->assertSame( array( 'rest', 'webdav', 'soap' ),
+                           sevenxAuthentication2faPolicy::appPasswordChoices( $all, array( 'rest', 'webdav', 'soap', 'expservices' ) ) );
+        $this->assertSame( array(), sevenxAuthentication2faPolicy::appPasswordChoices( array( 'expservices' ), array( 'expservices' ) ) );
+    }
+
     public function testAnEnforcedAccountWithAPasswordAloneIsRefused()
     {
         $this->assertSame( 'second_factor_required', sevenxAuthentication2faPolicy::otherPathDecision( true, true, false, 'totp', false, null, null ) );
@@ -181,8 +208,9 @@ class OtherSignInPathsTest extends TestCase
         $this->assertStringContainsString( "\nHandlers[]=sevenxAuthentication2faSignIn\n", $site );
         $this->assertStringNotContainsString( "\nHandlers[]\n", $site, 'never empties the list of other handlers' );
         $ini = (string)file_get_contents( dirname( __DIR__, 2 ) . '/settings/sevenxauthentication2fa.ini.append.php' );
-        $this->assertStringContainsString( "\nGuard=enabled\n", $ini );
         $this->assertStringContainsString( "\nCodeChannels[]=expservices\n", $ini );
+        $this->assertStringContainsString( "\nGuard[]\n", $ini );
+        $this->assertDoesNotMatchRegularExpression( '/^Guard\[\]=/m', $ini, 'no path guarded by default' );
         $this->assertStringNotContainsString( "\nChannels[]=expservices\n", $ini, 'no app password for the expservices login' );
     }
 }

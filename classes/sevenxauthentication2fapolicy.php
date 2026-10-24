@@ -238,6 +238,26 @@ class sevenxAuthentication2faPolicy
      */
     const APP_PASSWORD_CHANNELS = array( 'rest', 'webdav', 'soap' );
 
+    /**
+     * The paths guarded when [OtherSignInPaths] Guard[] is not set: none. By default only the web login form asks for
+     * the second step; REST, SOAP, WebDAV and the expservices login sign an enforced account in with its password as
+     * before, until a site lists the path in Guard[].
+     */
+    const DEFAULT_GUARDED_CHANNELS = array();
+
+    /**
+     * The paths an app password can be made for and used on: those [AppPasswords] Channels[] allows that are also
+     * guarded (on a path that is not guarded the password alone signs in, and the handler is never asked there).
+     *
+     * @param string[] $appChannels [AppPasswords] Channels[]
+     * @param string[] $guarded the guarded paths
+     * @return string[]
+     */
+    public static function appPasswordChoices( array $appChannels, array $guarded )
+    {
+        return array_values( array_intersect( self::channelList( $appChannels, self::APP_PASSWORD_CHANNELS ), $guarded ) );
+    }
+
     const REASON_REQUIRED = 'second_factor_required';
     const REASON_INVALID = 'second_factor_invalid';
     const REASON_SETUP = 'second_factor_setup_required';
@@ -254,7 +274,7 @@ class sevenxAuthentication2faPolicy
     /**
      * Whether a password that was right is enough on a path outside the web login form.
      *
-     * @param bool $guarded the path is guarded ([OtherSignInPaths] Guard, GuardedChannels[])
+     * @param bool $guarded the path is guarded ([OtherSignInPaths] Guard[])
      * @param bool $enforced Enforce2FA applies to the account (EnforcedGroups[], ExemptGroups[], ExemptEmailDomains[])
      * @param bool $optedIn the account set up a second step of its own and GuardOptedIn is enabled
      * @param string $method the account's working second step: totp, email or disabled

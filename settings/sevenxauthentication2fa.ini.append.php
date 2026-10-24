@@ -116,25 +116,26 @@ RecoveryCodes=10
 # soap and expservices (the login of the remote services). The kernel asks this
 # extension there (site.ini [SignInSecondFactorSettings] Handlers[]).
 #
-# For an account Enforce2FA applies to, a password alone is refused on these paths:
-# REST answers 401 second_factor_required (403 second_factor_setup_required while the
-# account has no second step yet), WebDAV and SOAP 401 with WWW-Authenticate and the
-# reason in X-Exp-Sign-In-Refused, the expservices login 401 with error.reason. The
-# account signs in there with an app password ([AppPasswords]) or, where CodeChannels[]
-# allows it, with the current code of its authenticator app. Accounts Enforce2FA does
-# not apply to, and exempt ones (ExemptGroups[], ExemptEmailDomains[]), are not
-# touched. Console commands are never asked. Every refusal is in the audit trail
-# (access.user.second_factor.refused) and in var/log/auth.log.
+# The paths guarded. By default none: only the web login form asks for the second
+# step, and REST (basic authentication, API keys, OAuth), SOAP, WebDAV and the
+# expservices login sign an enforced account in with its password alone, as before.
+# A site guards a path with one line in settings/override, e.g.
+#   Guard[]=expservices   (its login makes a session the website accepts)
+#   Guard[]=webdav
+#   Guard[]=rest
+#   Guard[]=soap
 #
-# disabled: the password alone signs in on these paths as before (not recommended).
-Guard=enabled
-
-# The paths guarded. An empty list guards none.
-GuardedChannels[]
-GuardedChannels[]=rest
-GuardedChannels[]=webdav
-GuardedChannels[]=soap
-GuardedChannels[]=expservices
+# For an account Enforce2FA applies to, a password alone is then refused on that path:
+# the expservices login 401 with error.reason, WebDAV 401 with WWW-Authenticate and the
+# reason in X-Exp-Sign-In-Refused, REST 401 second_factor_required (403
+# second_factor_setup_required while the account has no second step yet), SOAP 401 with
+# a SOAP fault. The account signs in there with an app password ([AppPasswords]: rest,
+# webdav, soap) or, where CodeChannels[] allows it, with the current code of its
+# authenticator app (expservices). Accounts Enforce2FA does not apply to, and exempt
+# ones (ExemptGroups[], ExemptEmailDomains[]), are not touched. Console commands are
+# never asked. Every refusal is in the audit trail (access.user.second_factor.refused)
+# and in var/log/auth.log.
+Guard[]
 
 # Also refuse a password alone for accounts that set up a second step themselves
 # (Enforce2FA does not apply to them): enabled | disabled
@@ -166,6 +167,9 @@ AppPasswords=enabled
 
 # The paths an app password may be made for. Only rest, webdav and soap are possible:
 # they sign in one request at a time and never make a session the web interface takes.
+# Of these, only the guarded ones ([OtherSignInPaths] Guard[]) are offered and accepted: by
+# default none, and the setup page shows no app passwords until a site guards rest,
+# webdav or soap.
 Channels[]
 Channels[]=rest
 Channels[]=webdav

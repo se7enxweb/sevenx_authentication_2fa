@@ -245,20 +245,21 @@ class sevenxAuthentication2faHelper
     /**
      * The settings of the sign-in paths outside the web login form ([OtherSignInPaths]): whether a path is guarded,
      * whether accounts that chose a second step themselves are guarded too, on which paths an authenticator code
-     * counts, and how many wrong codes lock it for how long. Missing settings mean the secure default: every path
-     * guarded, codes only on the expservices login.
-     * @return array guard, guarded (channels), opted_in, code_channels, code_max_attempts, code_lock_seconds
+     * counts, and how many wrong codes lock it for how long. Missing settings mean the defaults: no path guarded
+     * (Guard[] empty: every path signs in as before), codes only on the expservices login once it is guarded.
+     * @return array guard (any path guarded), guarded (channels), opted_in, code_channels, code_max_attempts,
+     *               code_lock_seconds
      */
     public function otherPathSettings()
     {
         $has = function ( $variable ) {
             return $this->ini && $this->ini->hasVariable( 'OtherSignInPaths', $variable );
         };
-        $guard = $has( 'Guard' ) ? strtolower( $this->stringSetting( 'OtherSignInPaths', 'Guard' ) ) !== 'disabled' : true;
-        $guarded = $has( 'GuardedChannels' )
-            ? sevenxAuthentication2faPolicy::channelList( $this->arraySetting( 'OtherSignInPaths', 'GuardedChannels' ) )
-            : sevenxAuthentication2faPolicy::CHANNELS;
-        $codes = $has( 'CodeChannels' )
+        $guarded = $has( 'Guard' )
+            ? sevenxAuthentication2faPolicy::channelList( $this->arraySetting( 'OtherSignInPaths', 'Guard' ) )
+            : sevenxAuthentication2faPolicy::DEFAULT_GUARDED_CHANNELS;
+        $guard = (bool)$guarded;
+        $codes =$has( 'CodeChannels' )
             ? sevenxAuthentication2faPolicy::channelList( $this->arraySetting( 'OtherSignInPaths', 'CodeChannels' ) )
             : array( 'expservices' );
         return array(
@@ -272,8 +273,9 @@ class sevenxAuthentication2faHelper
     }
 
     /**
-     * The settings of app passwords ([AppPasswords]): on or off, the paths they may be made for (never more than
-     * rest, webdav and soap), how many a user may have, for how many days a new one works (0: until revoked) and how
+     * The settings of app passwords ([AppPasswords]): on or off, the paths they may be made for (those of Channels[]
+     * that are guarded in [OtherSignInPaths] Guard[], never more than rest, webdav and soap; by default none, so the
+     * setup page shows no app passwords until a site guards one of them), how many a user may have, for how many days a new one works (0: until revoked) and how
      * often "last used" is written.
      * @return array enabled, channels, max, expiry_days, last_used_interval
      */
@@ -282,11 +284,12 @@ class sevenxAuthentication2faHelper
         $hasChannels = $this->ini && $this->ini->hasVariable( 'AppPasswords', 'Channels' );
         $enabled = $this->ini && $this->ini->hasVariable( 'AppPasswords', 'AppPasswords' )
             ? strtolower( $this->stringSetting( 'AppPasswords', 'AppPasswords' ) ) !== 'disabled' : true;
+        $paths = $this->otherPathSettings();
+        $configured = $hasChannels ? $this->arraySetting( 'AppPasswords', 'Channels' ) : sevenxAuthentication2faPolicy::APP_PASSWORD_CHANNELS;
         return array(
             'enabled' => $enabled,
-            'channels' => $hasChannels
-                ? sevenxAuthentication2faPolicy::channelList( $this->arraySetting( 'AppPasswords', 'Channels' ), sevenxAuthentication2faPolicy::APP_PASSWORD_CHANNELS )
-                : sevenxAuthentication2faPolicy::APP_PASSWORD_CHANNELS,
+            // only where the password alone is refused: SOAP, not guarded by default, has no app passwords then
+            'channels' => sevenxAuthentication2faPolicy::appPasswordChoices( $configured, $paths['guard'] ? $paths['guarded'] : array() ),
             'max' => max( 0, min( 50, $this->intSetting( 'AppPasswords', 'MaxPerUser', 10 ) ) ),
             'expiry_days' => max( 0, min( 3650, $this->intSetting( 'AppPasswords', 'ExpiryDays', 365 ) ) ),
             'last_used_interval' => max( 0, $this->intSetting( 'AppPasswords', 'LastUsedInterval', 900 ) ),

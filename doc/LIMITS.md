@@ -82,6 +82,12 @@ Review these before deploying the extension in production.
   the extension on REST basic authentication, WebDAV, SOAP or the expservices
   login, so a password alone still signs in there.
 
+- **No path outside the web login form is guarded by default.** An enforced
+  account still signs in to REST, SOAP, WebDAV and the expservices login with
+  its password alone, by the site owner's choice (their clients cannot answer a
+  second step). `[OtherSignInPaths] Guard[]=expservices`, `=webdav`, `=rest`
+  and `=soap` guard them; their clients then need a second factor.
+
 - **OAuth providers that require `access_token` as a query parameter may not work
   out of the box.** The default `eZOAuthUser::fetchUserInfo()` sends the token in
   an `Authorization: Bearer` header. Providers such as Instagram Basic Display
