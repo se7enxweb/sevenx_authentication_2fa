@@ -16,8 +16,15 @@ $helper = sevenxAuthentication2faHelper::instance();
 // Is the extension enabled?
 $helper->isEnabled();
 
-// Is 2FA enforced for all users?
+// Is Enforce2FA switched on?
 $helper->isEnforced();
+
+// Does it apply to this user (EnforcedGroups[], ExemptGroups[], ExemptEmailDomains[])?
+$helper->isEnforcedFor( $userOrUserID );
+
+// Recovery codes: a new set (returned once, stored as hashes), or use one up
+$codes = $helper->issueRecoveryCodes( $userID );
+$ok = $helper->useRecoveryCode( $userID, $typedCode );
 
 // What is the effective 2FA method for a user (totp|email|disabled)?
 $method = $helper->userMethod( $userID );

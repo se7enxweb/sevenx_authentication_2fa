@@ -107,6 +107,81 @@ should be removed or commented so the override order takes effect.
 Configure the extension in `extension/sevenx_authentication_2fa/settings/sevenxauthentication2fa.ini.append.php`
 or override it in `settings/override/sevenxauthentication2fa.ini.append.php`.
 
+### Requiring a second step (Enforce2FA)
+
+By default every user decides on their own account page. `Enforce2FA=enabled`
+requires a second step: a user it applies to who has none set up is taken to
+the setup page after the password and is signed in only once it is set up.
+Whom it applies to:
+
+```ini
+[General]
+Enforce2FA=enabled
+DefaultMethod=totp
+# Only these user groups (node id or object remote id); empty: every user
+EnforcedGroups[]
+EnforcedGroups[]=9b47a45624b023b1a76c73b74d704acf
+EnforcedGroups[]=3c160cca19fb135f83bd02d911f04db2
+# Taken out again (they may still opt in)
+ExemptGroups[]
+ExemptEmailDomains[]
+# Days a user may still choose "Set up later" (0: the setup comes first)
+GracePeriodDays=0
+```
+
+The two remote ids are the Administrator users and Editors groups of the
+standard data. This is what the installers write for a new site: the people
+who can change the site need a second step, front-end members choose for
+themselves. The extension's own default stays `Enforce2FA=disabled`, so that
+updating the extension never locks anyone out of an existing site.
+
+Group membership counts through every location of the user and the groups
+above it. A value that names no existing group is logged; when no value of
+`EnforcedGroups[]` exists, enforcement applies to nobody rather than to everyone.
+
+`ExemptEmailDomains[]` is meant for the accounts of automated checks, e.g.
+`example.invalid`, a reserved domain no mail reaches. Whoever can change these
+settings, or move users into an exempt group, decides who needs no second step.
+
+Before switching enforcement on, list who it would stop:
+
+```bash
+php extension/sevenx_authentication_2fa/bin/php/sevenx2fauser.php --enforced
+```
+
+### Recovery codes and a lost phone
+
+An authenticator gets ten recovery codes when it is set up (`[Security]
+RecoveryCodes`). They are shown once, only their hashes are stored, and each
+signs in once in place of the app's code ("Use a recovery code" on the code
+page). The setup page shows how many are left and makes a new set with a
+current code.
+
+An administrator who has no phone and no recovery code left is helped from the
+server's console:
+
+```bash
+# what the account has
+php extension/sevenx_authentication_2fa/bin/php/sevenx2fauser.php --login=<login>
+# remove the second step and reset the failed logins; with Enforce2FA the next sign-in sets it up again
+php extension/sevenx_authentication_2fa/bin/php/sevenx2fauser.php --login=<login> --reset
+# a new set of recovery codes for a working authenticator, printed once
+php extension/sevenx_authentication_2fa/bin/php/sevenx2fauser.php --login=<login> --recovery-codes
+```
+
+`--enrol-totp --secret-file=<path>` sets up an authenticator with a secret
+written only to that file (mode 0600), for the accounts of automated checks
+that compute their codes from it. Never use it for a person's account.
+
+### Sign-ins that do not ask for the second step
+
+The second step belongs to the sign-in form (`user/login`). These ask for a
+password only: WebDAV (the standard login handler), the REST API's basic
+authentication, and code that calls `eZUser::loginUser()` directly. Keep them
+off, or limited to accounts that need no second step, where it is enforced.
+A session that was signed in before enforcement was switched on stays signed
+in until it ends; the second step is asked at the next sign-in.
+
 ### Role policies and permissions
 
 The `user2fa` module defines four policy functions: `setup`, `verify`, `oauth`,

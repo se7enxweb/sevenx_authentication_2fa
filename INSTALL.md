@@ -67,6 +67,34 @@ siteaccess.
 TOTP and e-mail 2FA work without third-party credentials. Users can configure
 them at `/user2fa/setup` once logged in.
 
+To require it for the people who change the site (what the installers of new
+sites write), in `settings/override/sevenxauthentication2fa.ini.append.php`:
+
+```ini
+[General]
+Enforce2FA=enabled
+DefaultMethod=totp
+EnforcedGroups[]
+EnforcedGroups[]=9b47a45624b023b1a76c73b74d704acf
+EnforcedGroups[]=3c160cca19fb135f83bd02d911f04db2
+GracePeriodDays=0
+```
+
+Steps for an existing site:
+
+1. Have the administrators set up their second step first, at `/user2fa/setup`
+   (and keep their recovery codes).
+2. `php extension/sevenx_authentication_2fa/bin/php/sevenx2fauser.php --enforced`
+   lists the accounts that would be asked at their next sign-in.
+3. Accounts of automated checks: exempt them (`ExemptEmailDomains[]` or
+   `ExemptGroups[]`), or give them an authenticator with
+   `sevenx2fauser.php --login=<login> --enrol-totp --secret-file=<path>`.
+4. Switch it on, clear the INI cache (`php bin/php/ezcache.php --clear-tag=ini`)
+   and reload PHP.
+
+Locked out (no phone, no recovery code): `sevenx2fauser.php --login=<login> --reset`
+on the server. See README.md, "Recovery codes and a lost phone".
+
 ### E-mail OTP behaviour
 
 The e-mail OTP body is rendered from:
