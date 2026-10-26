@@ -49,7 +49,7 @@
             </div>
         </form>
         {if and( $is_email|not, gt( $recovery_codes_left, 0 ) )}
-        <details class="tfa-confirm">
+        <details class="tfa-confirm tfa-neutral tfa-recovery">
             <summary>{'Use a recovery code'|i18n( 'extension/sevenx_authentication_2fa' )}</summary>
             <form method="post" action={'user2fa/verify'|ezurl} class="embed-form" novalidate>
                 <div class="form-group">

@@ -94,3 +94,6 @@
 .tfa-m .tfa-apppw-scopes label { display: inline-flex; align-items: center; gap: .4rem; margin: 0 1.25rem .25rem 0; font-weight: 400; }
 .tfa-m details.tfa-confirm.tfa-neutral > summary { color: var(--tfa-ink); }
 .tfa-m details.tfa-confirm.tfa-neutral > summary::-webkit-details-marker { color: var(--tfa-ink); }
+/* "Use a recovery code" below the code form of the second step: a neutral way out, not a warning (tfa-neutral), with
+   room above it so it does not sit against the form's button */
+.tfa-m details.tfa-recovery { margin-top: 2rem; }
