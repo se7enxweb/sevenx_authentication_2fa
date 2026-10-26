@@ -743,5 +743,53 @@
         <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
         <translation>Možete imati do %count lozinki za aplikacije. Nova vrijedi dok je ne opozovete.</translation>
     </message>
+    <message>
+        <source>Your sign-in code for %site: %code</source>
+        <translation>Vaš kôd za prijavu na %site: %code</translation>
+    </message>
+    <message>
+        <source>Your sign-in code</source>
+        <translation>Vaš kôd za prijavu</translation>
+    </message>
+    <message>
+        <source>Use this code to finish signing in to %site.</source>
+        <translation>Upotrijebite ovaj kôd da biste dovršili prijavu na %site.</translation>
+    </message>
+    <message>
+        <source>Sign-in code</source>
+        <translation>Kôd za prijavu</translation>
+    </message>
+    <message>
+        <source>Enter it on the sign-in page, or open the link to continue. The link works only in the browser where you entered your password.</source>
+        <translation>Unesite ga na stranici za prijavu ili otvorite poveznicu da biste nastavili. Poveznica radi samo u pregledniku u kojem ste unijeli lozinku.</translation>
+    </message>
+    <message>
+        <source>Continue signing in</source>
+        <translation>Nastavi prijavu</translation>
+    </message>
+    <message>
+        <source>Sign-in page</source>
+        <translation>Stranica za prijavu</translation>
+    </message>
+    <message>
+        <source>The code expires in %minutes minutes.</source>
+        <translation>Kôd istječe za %minutes min.</translation>
+    </message>
+    <message>
+        <source>If the button does not work, copy this address into your browser: %url</source>
+        <translation>Ako gumb ne radi, kopirajte ovu adresu u svoj preglednik: %url</translation>
+    </message>
+    <message>
+        <source>If you did not try to sign in, you can ignore this mail: nobody can sign in without this code. Someone may know your password, though, so change it soon.</source>
+        <translation>Ako se niste pokušali prijaviti, možete zanemariti ovu poruku: bez ovog kôda nitko se ne može prijaviti. Ipak, netko možda zna vašu lozinku, pa je uskoro promijenite.</translation>
+    </message>
+    <message>
+        <source>Never share this code. We will never ask you for it.</source>
+        <translation>Nikada nikome ne dajte ovaj kôd. Mi vam ga nikada nećemo tražiti.</translation>
+    </message>
+    <message>
+        <source>You get this mail because two-step verification is turned on for your account on %site.</source>
+        <translation>Ovu poruku primate jer je za vaš račun na %site uključena provjera u dva koraka.</translation>
+    </message>
 </context>
 </TS>

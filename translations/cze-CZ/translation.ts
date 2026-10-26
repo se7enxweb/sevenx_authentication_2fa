@@ -743,5 +743,53 @@
         <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
         <translation>Můžete mít až %count hesel aplikací. Nové platí, dokud ho nezrušíte.</translation>
     </message>
+    <message>
+        <source>Your sign-in code for %site: %code</source>
+        <translation>Váš přihlašovací kód pro %site: %code</translation>
+    </message>
+    <message>
+        <source>Your sign-in code</source>
+        <translation>Váš přihlašovací kód</translation>
+    </message>
+    <message>
+        <source>Use this code to finish signing in to %site.</source>
+        <translation>Tímto kódem dokončíte přihlášení k webu %site.</translation>
+    </message>
+    <message>
+        <source>Sign-in code</source>
+        <translation>Přihlašovací kód</translation>
+    </message>
+    <message>
+        <source>Enter it on the sign-in page, or open the link to continue. The link works only in the browser where you entered your password.</source>
+        <translation>Zadejte ho na přihlašovací stránce, nebo pokračujte otevřením odkazu. Odkaz funguje jen v prohlížeči, ve kterém jste zadali heslo.</translation>
+    </message>
+    <message>
+        <source>Continue signing in</source>
+        <translation>Pokračovat v přihlášení</translation>
+    </message>
+    <message>
+        <source>Sign-in page</source>
+        <translation>Přihlašovací stránka</translation>
+    </message>
+    <message>
+        <source>The code expires in %minutes minutes.</source>
+        <translation>Platnost kódu vyprší za %minutes min.</translation>
+    </message>
+    <message>
+        <source>If the button does not work, copy this address into your browser: %url</source>
+        <translation>Pokud tlačítko nefunguje, zkopírujte tuto adresu do prohlížeče: %url</translation>
+    </message>
+    <message>
+        <source>If you did not try to sign in, you can ignore this mail: nobody can sign in without this code. Someone may know your password, though, so change it soon.</source>
+        <translation>Pokud jste se nepokoušeli přihlásit, můžete tento e-mail ignorovat: bez tohoto kódu se nikdo nepřihlásí. Někdo však možná zná vaše heslo, proto si ho brzy změňte.</translation>
+    </message>
+    <message>
+        <source>Never share this code. We will never ask you for it.</source>
+        <translation>Tento kód nikdy nikomu nesdělujte. Nikdy vás o něj nebudeme žádat.</translation>
+    </message>
+    <message>
+        <source>You get this mail because two-step verification is turned on for your account on %site.</source>
+        <translation>Tento e-mail dostáváte, protože u vašeho účtu na webu %site je zapnuté dvoustupňové ověření.</translation>
+    </message>
 </context>
 </TS>

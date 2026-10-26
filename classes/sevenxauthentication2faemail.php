@@ -31,7 +31,6 @@ class sevenxAuthentication2faEmail
     public static function sendCode( eZUser $user, $redirectUri = '', $resend = false )
     {
         $helper = sevenxAuthentication2faHelper::instance();
-        $ini = $helper->ini();
         $limits = $helper->limits();
 
         $length = max( 6, min( 8, $helper->intSetting( 'CodeSettings', 'Length', 6 ) ) );
@@ -58,48 +57,85 @@ class sevenxAuthentication2faEmail
             $helper->startPending( $userID, sevenxAuthentication2faHelper::METHOD_EMAIL, $ttl, $redirectUri, $extra );
         }
 
-        $email = $user->attribute( 'email' );
-        $subjectTemplate = $ini->hasVariable( 'EmailSettings', 'Subject' ) ? $ini->variable( 'EmailSettings', 'Subject' ) : 'Your login verification code is {code}';
-        $subject = str_replace( '{code}', $code, $subjectTemplate );
-
-        $siteUrl = eZSys::serverURL() . eZSys::indexDir();
-
-        $verifyPath = 'user2fa/verify/code/' . rawurlencode( $code );
-        eZURI::transformURI( $verifyPath, false, 'full' );
-        $verifyUrl = $verifyPath;
-
-        // Render the e-mail body from an overridable template so it can contain newlines and formatting.
-        $tpl = eZTemplate::factory();
-        $tpl->setVariable( 'code', $code );
-        $tpl->setVariable( 'expires', (int)( $ttl / 60 ) );
-        $tpl->setVariable( 'site_url', $siteUrl );
-        $tpl->setVariable( 'verify_url', $verifyUrl );
-        $body = $tpl->fetch( 'design:mail/2fa_code.tpl' );
-
-        if ( $ini->hasVariable( 'EmailSettings', 'Body' ) && trim( (string)$ini->variable( 'EmailSettings', 'Body' ) ) !== '' )
-        {
-            $bodyTemplate = $ini->variable( 'EmailSettings', 'Body' );
-            $body = str_replace( array( '{code}', '{expires}', '{site_url}', '{verify_url}' ), array( $code, (int)( $ttl / 60 ), $siteUrl, $verifyUrl ), $bodyTemplate );
-        }
-
-        $mail = new eZMail();
-        $mail->setReceiver( $email );
-
-        $sender = $ini->hasVariable( 'EmailSettings', 'Sender' ) ? trim( (string)$ini->variable( 'EmailSettings', 'Sender' ) ) : '';
-        if ( $sender && eZMail::validate( $sender ) )
-            $mail->setSender( $sender );
-        else
-            $mail->setSender( eZINI::instance()->variable( 'MailSettings', 'AdminEmail' ) );
-
-        $mail->setSubject( $subject );
-        $mail->setBody( $body );
-        $mail->setContentType( 'text/plain' );
-
+        $mail = self::buildMail( $user, $code, (int)( $ttl / 60 ) );
         $sent = (bool)eZMailTransport::send( $mail );
 
         sevenxAuthentication2faHelper::authLog( $resend ? '2fa_email_code_resent' : '2fa_email_code_sent', 'sent=' . ( $sent ? 'yes' : 'no' ), $userID );
 
         return $sent;
+    }
+
+    /**
+     * The sign-in code mail, not sent: an HTML mail with a plain-text part in the kernel's mail layout
+     * (design:mail/2fa_code.tpl), or plain text (design:mail/2fa_code_plain.tpl) with a kernel without that
+     * layout or with [EmailSettings] Body set. [EmailSettings] Subject, when set, replaces the subject of the template.
+     *
+     * @param eZUser $user
+     * @param string $code
+     * @param int $minutes how long the code works
+     * @return eZMail
+     */
+    public static function buildMail( eZUser $user, $code, $minutes )
+    {
+        $ini = sevenxAuthentication2faHelper::instance()->ini();
+        $siteINI = eZINI::instance();
+        $siteUrl = eZSys::serverURL() . eZSys::indexDir();
+        $siteName = (string)$siteINI->variable( 'SiteSettings', 'SiteName' );
+
+        $verifyUrl = 'user2fa/verify/code/' . rawurlencode( $code );
+        eZURI::transformURI( $verifyUrl, false, 'full' );
+        $loginUrl = 'user/login';
+        eZURI::transformURI( $loginUrl, false, 'full' );
+
+        // the kernel's mail layout came with expMailTemplateBody::applyRendered()
+        $layout = class_exists( 'expMailTemplateBody' ) && method_exists( 'expMailTemplateBody', 'applyRendered' );
+        $tpl = eZTemplate::factory();
+        $vars = array( 'code' => $code, 'expires' => (int)$minutes, 'site_url' => $siteUrl, 'site_name' => $siteName,
+                       'verify_url' => $verifyUrl, 'login_url' => $loginUrl, 'user' => $user );
+        foreach ( $vars as $name => $value )
+            $tpl->setVariable( $name, $value );
+        $body = (string)$tpl->fetch( $layout ? 'design:mail/2fa_code.tpl' : 'design:mail/2fa_code_plain.tpl' );
+        $subject = $tpl->hasVariable( 'subject' ) ? trim( (string)$tpl->variable( 'subject' ) ) : '';
+
+        $mail = new eZMail();
+        $mail->setReceiver( $user->attribute( 'email' ) );
+        $sender = $ini->hasVariable( 'EmailSettings', 'Sender' ) ? trim( (string)$ini->variable( 'EmailSettings', 'Sender' ) ) : '';
+        if ( $sender && eZMail::validate( $sender ) )
+            $mail->setSender( $sender );
+        else
+            $mail->setSender( $siteINI->variable( 'MailSettings', 'AdminEmail' ) );
+
+        $subjectSetting = $ini->hasVariable( 'EmailSettings', 'Subject' ) ? trim( (string)$ini->variable( 'EmailSettings', 'Subject' ) ) : '';
+        if ( $subjectSetting !== '' )
+            $subject = str_replace( '{code}', $code, $subjectSetting );
+        if ( $subject === '' )
+            $subject = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'Your sign-in code for %site: %code', null,
+                                    array( '%site' => $siteName, '%code' => $code ) );
+        $mail->setSubject( $subject );
+
+        $bodySetting = $ini->hasVariable( 'EmailSettings', 'Body' ) ? trim( (string)$ini->variable( 'EmailSettings', 'Body' ) ) : '';
+        if ( $bodySetting !== '' )
+        {
+            $mail->setContentType( 'text/plain' );
+            $mail->setBody( str_replace( array( '{code}', '{expires}', '{site_url}', '{verify_url}' ),
+                                         array( $code, (int)$minutes, $siteUrl, $verifyUrl ), $bodySetting ) );
+        }
+        elseif ( $layout )
+            expMailTemplateBody::apply( $mail, $tpl, $body );
+        else
+        {
+            $mail->setContentType( 'text/plain' );
+            $mail->setBody( $body );
+        }
+        if ( method_exists( $mail, 'setCategory' ) )
+            $mail->setCategory( 'security' );
+        // the request's template object renders the page next: the mail's variables are not left in it
+        foreach ( array_merge( array_keys( $vars ), array( 'subject', 'content_type', 'body_text' ) ) as $name )
+        {
+            if ( $tpl->hasVariable( $name ) )
+                $tpl->unsetVariable( $name );
+        }
+        return $mail;
     }
 
     /**

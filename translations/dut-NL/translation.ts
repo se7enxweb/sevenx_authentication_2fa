@@ -743,5 +743,53 @@
         <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
         <translation>U kunt tot %count app-wachtwoorden hebben. Een nieuw wachtwoord geldt tot u het intrekt.</translation>
     </message>
+    <message>
+        <source>Your sign-in code for %site: %code</source>
+        <translation>Je inlogcode voor %site: %code</translation>
+    </message>
+    <message>
+        <source>Your sign-in code</source>
+        <translation>Je inlogcode</translation>
+    </message>
+    <message>
+        <source>Use this code to finish signing in to %site.</source>
+        <translation>Gebruik deze code om het inloggen bij %site af te ronden.</translation>
+    </message>
+    <message>
+        <source>Sign-in code</source>
+        <translation>Inlogcode</translation>
+    </message>
+    <message>
+        <source>Enter it on the sign-in page, or open the link to continue. The link works only in the browser where you entered your password.</source>
+        <translation>Vul hem in op de inlogpagina, of open de link om door te gaan. De link werkt alleen in de browser waarin je je wachtwoord hebt ingevuld.</translation>
+    </message>
+    <message>
+        <source>Continue signing in</source>
+        <translation>Doorgaan met inloggen</translation>
+    </message>
+    <message>
+        <source>Sign-in page</source>
+        <translation>Inlogpagina</translation>
+    </message>
+    <message>
+        <source>The code expires in %minutes minutes.</source>
+        <translation>De code verloopt over %minutes minuten.</translation>
+    </message>
+    <message>
+        <source>If the button does not work, copy this address into your browser: %url</source>
+        <translation>Als de knop niet werkt, kopieer dan dit adres naar je browser: %url</translation>
+    </message>
+    <message>
+        <source>If you did not try to sign in, you can ignore this mail: nobody can sign in without this code. Someone may know your password, though, so change it soon.</source>
+        <translation>Heb je niet geprobeerd in te loggen? Dan kun je deze e-mail negeren: zonder deze code kan niemand inloggen. Wel kent iemand misschien je wachtwoord, dus wijzig het binnenkort.</translation>
+    </message>
+    <message>
+        <source>Never share this code. We will never ask you for it.</source>
+        <translation>Deel deze code nooit. We zullen je er nooit om vragen.</translation>
+    </message>
+    <message>
+        <source>You get this mail because two-step verification is turned on for your account on %site.</source>
+        <translation>Je krijgt deze e-mail omdat verificatie in twee stappen is ingeschakeld voor je account op %site.</translation>
+    </message>
 </context>
 </TS>

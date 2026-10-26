@@ -743,5 +743,53 @@
         <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
         <translation>Você pode ter até %count senhas de app. Uma nova vale até você revogá-la.</translation>
     </message>
+    <message>
+        <source>Your sign-in code for %site: %code</source>
+        <translation>Seu código de login para %site: %code</translation>
+    </message>
+    <message>
+        <source>Your sign-in code</source>
+        <translation>Seu código de login</translation>
+    </message>
+    <message>
+        <source>Use this code to finish signing in to %site.</source>
+        <translation>Use este código para concluir o login em %site.</translation>
+    </message>
+    <message>
+        <source>Sign-in code</source>
+        <translation>Código de login</translation>
+    </message>
+    <message>
+        <source>Enter it on the sign-in page, or open the link to continue. The link works only in the browser where you entered your password.</source>
+        <translation>Digite-o na página de login ou abra o link para continuar. O link funciona apenas no navegador em que você digitou sua senha.</translation>
+    </message>
+    <message>
+        <source>Continue signing in</source>
+        <translation>Continuar o login</translation>
+    </message>
+    <message>
+        <source>Sign-in page</source>
+        <translation>Página de login</translation>
+    </message>
+    <message>
+        <source>The code expires in %minutes minutes.</source>
+        <translation>O código expira em %minutes minutos.</translation>
+    </message>
+    <message>
+        <source>If the button does not work, copy this address into your browser: %url</source>
+        <translation>Se o botão não funcionar, copie este endereço no seu navegador: %url</translation>
+    </message>
+    <message>
+        <source>If you did not try to sign in, you can ignore this mail: nobody can sign in without this code. Someone may know your password, though, so change it soon.</source>
+        <translation>Se você não tentou entrar, pode ignorar este e-mail: ninguém consegue entrar sem este código. Mas alguém pode saber sua senha, então altere-a em breve.</translation>
+    </message>
+    <message>
+        <source>Never share this code. We will never ask you for it.</source>
+        <translation>Nunca compartilhe este código. Nunca pediremos esse código a você.</translation>
+    </message>
+    <message>
+        <source>You get this mail because two-step verification is turned on for your account on %site.</source>
+        <translation>Você recebeu este e-mail porque o login em duas etapas está ativado para sua conta em %site.</translation>
+    </message>
 </context>
 </TS>

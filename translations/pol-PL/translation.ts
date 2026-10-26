@@ -743,5 +743,53 @@
         <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
         <translation>Możesz mieć do %count haseł aplikacji. Nowe jest ważne, dopóki go nie unieważnisz.</translation>
     </message>
+    <message>
+        <source>Your sign-in code for %site: %code</source>
+        <translation>Kod logowania do witryny %site: %code</translation>
+    </message>
+    <message>
+        <source>Your sign-in code</source>
+        <translation>Kod logowania</translation>
+    </message>
+    <message>
+        <source>Use this code to finish signing in to %site.</source>
+        <translation>Ten kod służy do dokończenia logowania do witryny %site.</translation>
+    </message>
+    <message>
+        <source>Sign-in code</source>
+        <translation>Kod logowania</translation>
+    </message>
+    <message>
+        <source>Enter it on the sign-in page, or open the link to continue. The link works only in the browser where you entered your password.</source>
+        <translation>Należy wpisać go na stronie logowania lub otworzyć link, aby kontynuować. Link działa tylko w przeglądarce, w której wpisano hasło.</translation>
+    </message>
+    <message>
+        <source>Continue signing in</source>
+        <translation>Kontynuować logowanie</translation>
+    </message>
+    <message>
+        <source>Sign-in page</source>
+        <translation>Strona logowania</translation>
+    </message>
+    <message>
+        <source>The code expires in %minutes minutes.</source>
+        <translation>Kod wygaśnie za %minutes min.</translation>
+    </message>
+    <message>
+        <source>If the button does not work, copy this address into your browser: %url</source>
+        <translation>Jeśli przycisk nie działa, należy skopiować ten adres do przeglądarki: %url</translation>
+    </message>
+    <message>
+        <source>If you did not try to sign in, you can ignore this mail: nobody can sign in without this code. Someone may know your password, though, so change it soon.</source>
+        <translation>Jeśli nie była to próba własnego logowania, można zignorować tę wiadomość: bez tego kodu nikt się nie zaloguje. Ktoś może jednak znać hasło, dlatego należy wkrótce je zmienić.</translation>
+    </message>
+    <message>
+        <source>Never share this code. We will never ask you for it.</source>
+        <translation>Tego kodu nie należy nikomu przekazywać. Nigdy nie poprosimy o jego podanie.</translation>
+    </message>
+    <message>
+        <source>You get this mail because two-step verification is turned on for your account on %site.</source>
+        <translation>Ta wiadomość została wysłana, ponieważ dla konta w witrynie %site włączono logowanie dwuetapowe.</translation>
+    </message>
 </context>
 </TS>

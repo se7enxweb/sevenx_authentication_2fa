@@ -743,5 +743,53 @@
         <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
         <translation>Du kan ha opptil %count app-passord. Et nytt gjelder til du tilbakekaller det.</translation>
     </message>
+    <message>
+        <source>Your sign-in code for %site: %code</source>
+        <translation>Innloggingskoden din for %site: %code</translation>
+    </message>
+    <message>
+        <source>Your sign-in code</source>
+        <translation>Innloggingskoden din</translation>
+    </message>
+    <message>
+        <source>Use this code to finish signing in to %site.</source>
+        <translation>Bruk denne koden for å fullføre innloggingen på %site.</translation>
+    </message>
+    <message>
+        <source>Sign-in code</source>
+        <translation>Innloggingskode</translation>
+    </message>
+    <message>
+        <source>Enter it on the sign-in page, or open the link to continue. The link works only in the browser where you entered your password.</source>
+        <translation>Skriv den inn på innloggingssiden, eller åpne lenken for å fortsette. Lenken virker bare i nettleseren der du skrev inn passordet.</translation>
+    </message>
+    <message>
+        <source>Continue signing in</source>
+        <translation>Fortsett innloggingen</translation>
+    </message>
+    <message>
+        <source>Sign-in page</source>
+        <translation>Innloggingsside</translation>
+    </message>
+    <message>
+        <source>The code expires in %minutes minutes.</source>
+        <translation>Koden utløper om %minutes minutter.</translation>
+    </message>
+    <message>
+        <source>If the button does not work, copy this address into your browser: %url</source>
+        <translation>Hvis knappen ikke virker, kopier denne adressen inn i nettleseren: %url</translation>
+    </message>
+    <message>
+        <source>If you did not try to sign in, you can ignore this mail: nobody can sign in without this code. Someone may know your password, though, so change it soon.</source>
+        <translation>Hvis du ikke prøvde å logge inn, kan du se bort fra denne e-posten: ingen kan logge inn uten denne koden. Noen kan likevel kjenne passordet ditt, så bytt det snart.</translation>
+    </message>
+    <message>
+        <source>Never share this code. We will never ask you for it.</source>
+        <translation>Del aldri denne koden. Vi kommer aldri til å be deg om den.</translation>
+    </message>
+    <message>
+        <source>You get this mail because two-step verification is turned on for your account on %site.</source>
+        <translation>Du får denne e-posten fordi totrinnsinnlogging er slått på for kontoen din på %site.</translation>
+    </message>
 </context>
 </TS>

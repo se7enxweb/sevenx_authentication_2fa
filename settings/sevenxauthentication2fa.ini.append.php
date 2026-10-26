@@ -62,11 +62,15 @@ EmailTTL=600
 Algorithm=SHA1
 
 [EmailSettings]
-# Subject of the OTP email. {code} is replaced with the actual code.
-Subject=Your login verification code is {code}
+# Subject of the sign-in code mail. Empty: the translated subject of the
+# template, "Your sign-in code for <site name>: <code>". {code} is replaced
+# with the code.
+Subject=
 
 # Optional plain-text body override. If left empty or commented out, the template
-# extension/sevenx_authentication_2fa/design/standard/templates/mail/2fa_code.tpl is used.
+# extension/sevenx_authentication_2fa/design/standard/templates/mail/2fa_code.tpl is used:
+# an HTML mail with a plain-text part in the kernel's mail layout
+# (design:mail/layout.tpl), or mail/2fa_code_plain.tpl on a kernel without it.
 # Placeholders: {code}, {expires}, {site_url}, {verify_url}.
 #Body=
 

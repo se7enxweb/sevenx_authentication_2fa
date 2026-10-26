@@ -1,0 +1,7 @@
+{* The plain-text sign-in code mail, for a kernel without design:mail/layout.tpl (sevenxAuthentication2faEmail::sendCode()
+   uses mail/2fa_code.tpl when the kernel has expMailTemplateBody). The same variables and texts as mail/2fa_code.tpl.
+   The template engine drops a line break next to a tag, so the line breaks are explicit {"\n"}. *}
+{def $tp_site = first_set( $site_name, ezini( 'SiteSettings', 'SiteName' ) )}
+{set-block scope=root variable=subject}{'Your sign-in code for %site: %code'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%site', $tp_site, '%code', $code ) )}{/set-block}
+{'Use this code to finish signing in to %site.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%site', $tp_site ) )}{"\n\n"}    {$code}{"\n\n"}{'Enter it on the sign-in page, or open the link to continue. The link works only in the browser where you entered your password.'|i18n( 'extension/sevenx_authentication_2fa' )}{"\n"}{$verify_url}{"\n\n"}{'The code expires in %minutes minutes.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%minutes', $expires ) )}{"\n\n"}{'If you did not try to sign in, you can ignore this mail: nobody can sign in without this code. Someone may know your password, though, so change it soon.'|i18n( 'extension/sevenx_authentication_2fa' )}{"\n"}{'Never share this code. We will never ask you for it.'|i18n( 'extension/sevenx_authentication_2fa' )}{"\n\n"}--{"\n"}{$tp_site}{"\n"}
+{undef $tp_site}

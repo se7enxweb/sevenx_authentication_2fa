@@ -743,5 +743,53 @@
         <source>You can have up to %count app passwords. A new one works until you revoke it.</source>
         <translation>Du kan ha upp till %count applösenord. Ett nytt gäller tills du återkallar det.</translation>
     </message>
+    <message>
+        <source>Your sign-in code for %site: %code</source>
+        <translation>Din inloggningskod för %site: %code</translation>
+    </message>
+    <message>
+        <source>Your sign-in code</source>
+        <translation>Din inloggningskod</translation>
+    </message>
+    <message>
+        <source>Use this code to finish signing in to %site.</source>
+        <translation>Använd den här koden för att slutföra inloggningen på %site.</translation>
+    </message>
+    <message>
+        <source>Sign-in code</source>
+        <translation>Inloggningskod</translation>
+    </message>
+    <message>
+        <source>Enter it on the sign-in page, or open the link to continue. The link works only in the browser where you entered your password.</source>
+        <translation>Ange den på inloggningssidan, eller öppna länken för att fortsätta. Länken fungerar bara i den webbläsare där du angav ditt lösenord.</translation>
+    </message>
+    <message>
+        <source>Continue signing in</source>
+        <translation>Fortsätt logga in</translation>
+    </message>
+    <message>
+        <source>Sign-in page</source>
+        <translation>Inloggningssida</translation>
+    </message>
+    <message>
+        <source>The code expires in %minutes minutes.</source>
+        <translation>Koden går ut om %minutes minuter.</translation>
+    </message>
+    <message>
+        <source>If the button does not work, copy this address into your browser: %url</source>
+        <translation>Om knappen inte fungerar, kopiera den här adressen till din webbläsare: %url</translation>
+    </message>
+    <message>
+        <source>If you did not try to sign in, you can ignore this mail: nobody can sign in without this code. Someone may know your password, though, so change it soon.</source>
+        <translation>Om du inte försökte logga in kan du ignorera det här e-postmeddelandet: ingen kan logga in utan den här koden. Någon kan dock känna till ditt lösenord, så byt det snart.</translation>
+    </message>
+    <message>
+        <source>Never share this code. We will never ask you for it.</source>
+        <translation>Dela aldrig den här koden. Vi kommer aldrig att be dig om den.</translation>
+    </message>
+    <message>
+        <source>You get this mail because two-step verification is turned on for your account on %site.</source>
+        <translation>Du får det här e-postmeddelandet eftersom tvåstegsinloggning är aktiverad för ditt konto på %site.</translation>
+    </message>
 </context>
 </TS>
