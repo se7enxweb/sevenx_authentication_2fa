@@ -8,7 +8,7 @@ own the same look. Security behaviour is in the README (Security).
 
 | View | What it shows | States |
 |---|---|---|
-| `user2fa/verify` | The second step after the password: one code field, **Verify and sign in**, **Send a new code** for e-mail codes, **Use a recovery code** (a second form, shown while recovery codes are left), the way back to the login form | `verify`, `failed` (wrong code, tries left), `locked` (too many wrong codes or a locked account), `expired` (nothing pending in this browser), `elsewhere` (an e-mail link opened in another browser) |
+| `user2fa/verify` | The second step after the password: **Use a passkey** when the account has passkeys of the kernel (`$passkey_options`; alone when the pending method is `passkey`), one code field, **Verify and sign in**, **Send a new code** for e-mail codes, **Use a recovery code** (a second form, shown while recovery codes are left), the way back to the login form | `verify`, `failed` (wrong code, tries left), `locked` (too many wrong codes or a locked account), `expired` (nothing pending in this browser), `elsewhere` (an e-mail link opened in another browser) |
 | `user2fa/setup` | The state, the choice of method, the authenticator enrolment (QR code drawn on the server, the key in groups of four, the confirming code), the recovery codes once after they were made (`$recovery_codes`, with `$continue_url` after a first setup), how many are left and making a new set, the confirmation with a current code before moving away from a confirmed authenticator, and the removal behind a confirmation; during a grace period **Set up later** (`$grace_days_left`) | signed in; a first setup before signing in when `Enforce2FA` asks for one (`$is_pending_setup`) |
 | `user2fa/oauth`, `user2fa/callback` | Only when a social login does not sign anyone in | `cancelled`, `state`, `not_configured`, `unknown_provider`, `no_account`, `unverified_email`, `not_allowed`, `failed` |
 
@@ -18,7 +18,7 @@ the administration) `verify`, `callback` and a first setup are drawn by
 ordinary pages of the site.
 
 Form fields and button names are fixed by the views: `Code`, `VerifyButton`,
-`ResendButton`; `Method` (`totp`, `email`, `disabled`), `Code`, `Secret`,
+`ResendButton`, `PasskeyVerifyButton` (the passkey answer: `PasskeyCredentialID` and the other fields of `exp_passkey.js`); `Method` (`totp`, `email`, `disabled`), `Code`, `Secret`,
 `SetupButton`, `ResetButton`, `RecoveryButton`, `LaterButton`; the app passwords of `user2fa/setup`
 (`$app_passwords_enabled`, `$app_passwords`, `$app_password_channels`, `$app_passwords_max`,
 `$app_password_expiry_days`, a new one once in `$new_app_password` with `$new_app_password_name`):

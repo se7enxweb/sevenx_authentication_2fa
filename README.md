@@ -157,6 +157,18 @@ Before switching enforcement on, list who it would stop:
 php extension/sevenx_authentication_2fa/bin/php/sevenx2fauser.php --enforced
 ```
 
+### A passkey as the second step
+
+When the kernel's passkeys are on (`site.ini [PasskeySettings]`, Exponential 6.0.15) and an account has a passkey,
+the second step after the password offers **Use a passkey** beside the code of the authenticator app. A passkey is a
+strong second factor (something one has, unlocked by a PIN, a fingerprint or a face), so an account that must have a
+second step (`Enforce2FA`) and has a passkey needs no authenticator app: its second step is the passkey, and the setup
+page is not forced on it. The kernel checks the answer (`expPasskeyService::verifyForUser()`: the challenge of this
+sign-in, the origin, the signature, user verification, the counter); a wrong or cancelled passkey counts like a wrong
+code. Signing in with the password and a passkey, or the password and the app's code, counts as the kernel's "Verify
+it's you" where that is what it would ask. Only the web sign-in form takes a passkey; REST, WebDAV, SOAP and the
+`expservices` login are unchanged. A passkey sign-in on the login form is the whole sign-in and asks no second step.
+
 ### Recovery codes and a lost phone
 
 An authenticator gets ten recovery codes when it is set up (`[Security]

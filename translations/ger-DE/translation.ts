@@ -580,6 +580,18 @@
         <translation>Einen Wiederherstellungscode verwenden</translation>
     </message>
     <message>
+        <source>Use a passkey</source>
+        <translation>Einen Passkey benutzen</translation>
+    </message>
+    <message>
+        <source>Confirm with one of your passkeys: your browser asks for your fingerprint, face, screen lock or security key.</source>
+        <translation>Bestätigen Sie mit einem Ihrer Passkeys: Ihr Browser fragt nach Fingerabdruck, Gesicht, Bildschirmsperre oder Sicherheitsschlüssel.</translation>
+    </message>
+    <message>
+        <source>The passkey could not be checked. Try again, or use another way below.</source>
+        <translation>Der Passkey konnte nicht geprüft werden. Versuchen Sie es noch einmal oder benutzen Sie einen anderen Weg weiter unten.</translation>
+    </message>
+    <message>
         <source>Recovery code</source>
         <translation>Wiederherstellungscode</translation>
     </message>
