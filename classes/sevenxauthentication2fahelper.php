@@ -42,6 +42,8 @@ class sevenxAuthentication2faHelper
     const METHOD_DISABLED = 'disabled';
     const METHOD_TOTP     = 'totp';
     const METHOD_EMAIL    = 'email';
+    /** The second step answered with one of the account's passkeys (the kernel's, expPasskeyService) */
+    const METHOD_PASSKEY  = 'passkey';
 
     /**
      * A safe, site-relative redirect target ('/' when the given one is not safe).
@@ -501,6 +503,46 @@ class sevenxAuthentication2faHelper
         $attribute->setAttribute( 'data_text', $data->toJson() );
         $attribute->store();
         return true;
+    }
+
+    /**
+     * Whether a passkey can answer the second step of this account: the kernel's passkeys are on and in use here
+     * (expPasskeyService) and the account has at least one. A passkey is a strong second factor (something one has,
+     * unlocked by a PIN, a fingerprint or a face), so it counts like the app's code; an account that must have a
+     * second step (Enforce2FA) and has a passkey needs no app. Only the web sign-in form asks: the other paths
+     * (REST, WebDAV, SOAP, expservices) never take a passkey.
+     * @param eZUser $user
+     * @return bool
+     */
+    public static function hasPasskey( eZUser $user )
+    {
+        if ( !class_exists( 'expPasskeyService' ) || !class_exists( 'expPasskey' ) )
+            return false;
+        try
+        {
+            $service = new expPasskeyService();
+            return $service->available() && expPasskey::countByUser( (int)$user->attribute( 'contentobject_id' ) ) > 0;
+        }
+        catch ( Throwable $e )
+        {
+            eZDebug::writeWarning( 'Passkeys could not be looked up: ' . $e->getMessage(), __METHOD__ );
+            return false;
+        }
+    }
+
+    /**
+     * The options of the browser's passkey dialog for the second step of a pending sign-in (a new challenge, bound
+     * to the account), JSON; '' when a passkey cannot answer it.
+     * @param eZUser $user
+     * @return string
+     */
+    public static function passkeyOptions( eZUser $user )
+    {
+        if ( !self::hasPasskey( $user ) )
+            return '';
+        $service = new expPasskeyService();
+        $options = $service->reauthOptions( $user );
+        return $options ? json_encode( $options, JSON_UNESCAPED_SLASHES ) : '';
     }
 
     /**

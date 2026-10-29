@@ -81,6 +81,38 @@ else
         $status = 'locked';
         sevenxAuthentication2faHelper::authLog( '2fa_verify_account_locked', '', $userID );
     }
+    elseif ( $http->hasPostVariable( 'PasskeyCredentialID' ) && sevenxAuthentication2faHelper::hasPasskey( $user ) )
+    {
+        // The second step answered with one of the account's passkeys (the kernel checks it: challenge of this
+        // sign-in, origin, signature, user verification, counter; recorded as access.passkey.use)
+        $service = new expPasskeyService();
+        $answer = $service->verifyForUser( $user, $_POST );
+        if ( $answer['ok'] )
+        {
+            $redirect = sevenxAuthentication2faHelper::normalizeRedirect( $pending['redirect'] );
+            $helper->removePendingChallenge();
+            sevenxAuthentication2faHelper::authLog( '2fa_verify_succeeded', 'method=passkey', $userID );
+            eZsevenxUser2faUser::completeLogin( $user );
+            // the password and a passkey: as much as "Verify it's you" asks, so it is not asked again right away
+            if ( class_exists( 'expReauth' ) && method_exists( 'expReauth', 'markFreshAfterSignIn' ) )
+                expReauth::markFreshAfterSignIn( $user, array( 'password', 'passkey' ) );
+            return $Module->redirectTo( $redirect );
+        }
+        sevenxAuthentication2faHelper::authLog( '2fa_verify_failed', 'method=passkey', $userID );
+        eZsevenxUser2faUser::countFailedCode( $userID );
+        $pending = sevenxAuthentication2faAttempts::fail( $pending );
+        if ( sevenxAuthentication2faAttempts::remaining( $pending, $limits['max_attempts'] ) <= 0 )
+        {
+            $helper->removePendingChallenge();
+            $status = 'locked';
+        }
+        else
+        {
+            $helper->updatePending( $pending );
+            $status = 'failed';
+            $error = ezpI18n::tr( 'extension/sevenx_authentication_2fa', 'The passkey could not be checked. Try again, or use another way below.' );
+        }
+    }
     elseif ( $http->hasPostVariable( 'ResendButton' ) && $pending['method'] === sevenxAuthentication2faHelper::METHOD_EMAIL )
     {
         $wait = sevenxAuthentication2faAttempts::resendWait( $pending, $limits['resend_interval'], $limits['max_resends'], time() );
@@ -141,6 +173,9 @@ else
             $helper->removePendingChallenge();
             sevenxAuthentication2faHelper::authLog( '2fa_verify_succeeded', 'method=' . $pending['method'], $userID );
             eZsevenxUser2faUser::completeLogin( $user );
+            // the password and the app's code count as "Verify it's you" where that is what it would ask
+            if ( $data && $step !== false && class_exists( 'expReauth' ) && method_exists( 'expReauth', 'markFreshAfterSignIn' ) )
+                expReauth::markFreshAfterSignIn( $user, array( 'password', 'code' ) );
             return $Module->redirectTo( $redirect );
         }
 
@@ -194,6 +229,9 @@ if ( $pending && $user instanceof eZUser && $pending['method'] === sevenxAuthent
     $recoveryLeft = $recoveryData ? sevenxAuthentication2faPolicy::recoveryCodesLeft( $recoveryData->recovery() ) : 0;
 }
 $tpl->setVariable( 'recovery_codes_left', $recoveryLeft );
+// A passkey of the account answers the second step too (a new challenge each time the page is drawn)
+$tpl->setVariable( 'passkey_options', $pending && $user instanceof eZUser && ( $status === 'verify' || $status === 'failed' )
+                                      ? sevenxAuthentication2faHelper::passkeyOptions( $user ) : '' );
 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:user2fa/verify.tpl' );

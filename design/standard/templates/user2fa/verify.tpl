@@ -8,7 +8,9 @@
    browser). Works without javascript. Guide: extension/sevenx_authentication_2fa/doc/two-factor-pages.md *}
 {include uri='design:user2fa/exp_style.tpl'}
 {def $is_email = eq( $method, 'email' )
-     $is_open = or( eq( $status, 'verify' ), eq( $status, 'failed' ) )}
+     $is_open = or( eq( $status, 'verify' ), eq( $status, 'failed' ) )
+     $is_passkey = eq( $method, 'passkey' )
+     $pk_options = first_set( $passkey_options, '' )}
 
 <div class="exp-2fa is-signin">
 
@@ -18,7 +20,9 @@
 
 <h1 class="exp-2fa-title">{'Confirm it is you'|i18n( 'extension/sevenx_authentication_2fa' )}</h1>
 <p class="exp-2fa-sub">
-{if $is_email}
+{if $is_passkey}
+    {'Confirm with one of your passkeys: your browser asks for your fingerprint, face, screen lock or security key.'|i18n( 'extension/sevenx_authentication_2fa' )}
+{elseif $is_email}
     {if $masked_email}{'We sent a code to %email. Enter it below.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%email', concat( '<strong>', $masked_email|wash, '</strong>' ) ) )}{else}{'A verification code has been sent to your e-mail address.'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}
 {else}
     {'Open your authenticator app and enter the %digits-digit code it shows for this site.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%digits', $digits ) )}
@@ -28,6 +32,19 @@
 {if $notice}<div class="exp-feedback is-ok" role="status"><p>{$notice|wash}</p></div>{/if}
 {if $error}<div class="exp-feedback is-bad" role="alert" id="tfa-verify-error"><p>{$error|wash}</p></div>{/if}
 
+{if $pk_options}
+<form method="post" action={'user2fa/verify'|ezurl} class="exp-passkey-verify" data-exp-passkey="reauth" data-exp-passkey-options="{$pk_options|wash}"
+      data-msg-working="{'Follow the steps of your browser or device.'|i18n( 'design/standard/user/passkeys' )|wash}"
+      data-msg-cancelled="{'The passkey dialog was closed. Nothing was changed.'|i18n( 'design/standard/user/passkeys' )|wash}"
+      data-msg-failed="{'The passkey could not be used. Please try again.'|i18n( 'design/standard/user/passkeys' )|wash}"
+      data-msg-unsupported="{'This browser cannot use passkeys. Use another way, or another browser.'|i18n( 'design/standard/user/reauth' )|wash}">
+    <button type="submit" class="exp-btn{if $is_passkey} exp-btn-primary{/if} is-wide" name="PasskeyVerifyButton" value="1" data-exp-passkey-needed="1">{'Use a passkey'|i18n( 'extension/sevenx_authentication_2fa' )}</button>
+    <p class="exp-help" data-exp-passkey-status="1" role="status" aria-live="polite" hidden="hidden"></p>
+</form>
+<script src={'javascript/exp_passkey.js'|ezdesign} defer="defer"></script>
+{/if}
+
+{if $is_passkey|not}
 <form method="post" action={'user2fa/verify'|ezurl} novalidate="novalidate">
     <div class="exp-field">
         <label for="Code">{'Verification code'|i18n( 'extension/sevenx_authentication_2fa' )}</label>
@@ -46,6 +63,7 @@
     {if gt( $resend_wait, 0 )}<p class="exp-attempts" id="tfa-resend-wait">{'A new code can be sent in %seconds seconds.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%seconds', $resend_wait ) )}</p>{/if}
     {/if}
 </form>
+{/if}
 
 {if and( $is_email|not, gt( $recovery_codes_left, 0 ) )}
 <details class="exp-confirm">
@@ -94,4 +112,4 @@
 {/if}
 
 </div>
-{undef $is_email $is_open}
+{undef $is_email $is_open $is_passkey $pk_options}

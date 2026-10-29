@@ -139,6 +139,19 @@ class eZsevenxUser2faUser extends eZUser
         {
             if ( $helper->isEnforcedFor( $user ) )
             {
+                // A passkey of the account is a strong second factor: it answers the second step, no app is needed
+                if ( sevenxAuthentication2faHelper::hasPasskey( $user ) )
+                {
+                    sevenxAuthentication2faHelper::authLog( '2fa_challenge_started', 'method=passkey', $userID );
+                    $limits = $helper->limits();
+                    $helper->startPending( $userID, sevenxAuthentication2faHelper::METHOD_PASSKEY, $limits['challenge_ttl'], $redirect );
+                    $url = 'user2fa/verify';
+                    eZURI::transformURI( $url );
+                    eZSession::stop();
+                    eZHTTPTool::instance()->redirect( $url );
+                    eZExecution::cleanExit();
+                    return false;
+                }
                 sevenxAuthentication2faHelper::authLog( '2fa_enforced_setup_redirect', '', $userID );
                 return self::redirectToSetup( $user, $redirect );
             }

@@ -7,7 +7,9 @@
    user2fa/parts/style.tpl. Guide: extension/sevenx_authentication_2fa/doc/two-factor-pages.md *}
 {include uri='design:user2fa/parts/style.tpl'}
 {def $is_email = eq( $method, 'email' )
-     $is_open = or( eq( $status, 'verify' ), eq( $status, 'failed' ) )}
+     $is_open = or( eq( $status, 'verify' ), eq( $status, 'failed' ) )
+     $is_passkey = eq( $method, 'passkey' )
+     $pk_options = first_set( $passkey_options, '' )}
 
 <header class="full-page-header acc-header text-center no-breadcrumbs">
     <div class="container">
@@ -22,6 +24,22 @@
         {if $notice}<div class="acc-notice success" role="status"><p>{$notice|wash}</p></div>{/if}
         {if $error}<div class="acc-notice error" role="alert" id="tfa-verify-error"><p>{$error|wash}</p></div>{/if}
 
+        {if $pk_options}
+        <form method="post" action={'user2fa/verify'|ezurl} class="embed-form" data-exp-passkey="reauth" data-exp-passkey-options="{$pk_options|wash}"
+              data-msg-working="{'Follow the steps of your browser or device.'|i18n( 'design/standard/user/passkeys' )|wash}"
+              data-msg-cancelled="{'The passkey dialog was closed. Nothing was changed.'|i18n( 'design/standard/user/passkeys' )|wash}"
+              data-msg-failed="{'The passkey could not be used. Please try again.'|i18n( 'design/standard/user/passkeys' )|wash}"
+              data-msg-unsupported="{'This browser cannot use passkeys. Use another way, or another browser.'|i18n( 'design/standard/user/reauth' )|wash}">
+            <div class="acc-card">
+                <h2>{'Use a passkey'|i18n( 'extension/sevenx_authentication_2fa' )}</h2>
+                <p class="acc-lead">{'Confirm with one of your passkeys: your browser asks for your fingerprint, face, screen lock or security key.'|i18n( 'extension/sevenx_authentication_2fa' )}</p>
+                <div class="acc-actions"><button type="submit" class="btn {if $is_passkey}btn-primary{else}btn-secondary{/if}" name="PasskeyVerifyButton" value="1" data-exp-passkey-needed="1">{'Use a passkey'|i18n( 'extension/sevenx_authentication_2fa' )}</button></div>
+                <p class="tfa-hint" data-exp-passkey-status="1" role="status" aria-live="polite" hidden="hidden"></p>
+            </div>
+        </form>
+        <script src={'javascript/exp_passkey.js'|ezdesign} defer="defer"></script>
+        {/if}
+        {if $is_passkey|not}
         <form method="post" action={'user2fa/verify'|ezurl} class="embed-form" novalidate>
             <div class="acc-card">
                 <h2>{if $is_email}{'Enter the code from your e-mail'|i18n( 'extension/sevenx_authentication_2fa' )}{else}{'Enter the code from your app'|i18n( 'extension/sevenx_authentication_2fa' )}{/if}</h2>
@@ -48,6 +66,7 @@
                 {if and( $is_email, gt( $resend_wait, 0 ) )}<p class="tfa-hint">{'A new code can be sent in %seconds seconds.'|i18n( 'extension/sevenx_authentication_2fa',, hash( '%seconds', $resend_wait ) )}</p>{/if}
             </div>
         </form>
+        {/if}
         {if and( $is_email|not, gt( $recovery_codes_left, 0 ) )}
         <details class="tfa-confirm tfa-neutral tfa-recovery">
             <summary>{'Use a recovery code'|i18n( 'extension/sevenx_authentication_2fa' )}</summary>
@@ -79,4 +98,4 @@
 {/if}
     </div>
 </div>
-{undef $is_email $is_open}
+{undef $is_email $is_open $is_passkey $pk_options}
