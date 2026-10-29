@@ -879,6 +879,86 @@ class sevenxAuthentication2faHelper
         eZLog::write( $message, 'auth.log', 'var/log' );
         // auth.log is the audit trail; the debug output only shows it (a notice copied every login into notice.log)
         eZDebug::writeDebug( $message, 'sevenx_authentication_2fa:auth' );
+
+        self::kernelAudit( $action, $details, (int)$userID );
+    }
+
+    /**
+     * The actions of auth.log that are also events of the kernel's audit (expSignInSecondFactor::audit()): the
+     * changes of an account's second step, which reach the user audit log, the account's security activity
+     * (user/security) and the security alerts by e-mail. action => array( kernel constant, after keys taken from the
+     * details, result, fixed after values ).
+     */
+    const KERNEL_EVENTS = array(
+        '2fa_setup_totp_ok' => array( 'AUDIT_2FA_ENROLL', array(), 'success', array( 'method' => 'totp' ) ),
+        '2fa_setup_email' => array( 'AUDIT_2FA_ENROLL', array(), 'success', array( 'method' => 'email' ) ),
+        '2fa_setup_disabled' => array( 'AUDIT_2FA_REMOVE', array(), 'success', array( 'how' => 'disabled' ) ),
+        '2fa_setup_reset' => array( 'AUDIT_2FA_REMOVE', array(), 'success', array( 'how' => 'reset' ) ),
+        '2fa_recovery_codes_issued' => array( 'AUDIT_2FA_RECOVERY_ISSUED', array( 'count' ), 'success', array() ),
+        '2fa_recovery_code_used' => array( 'AUDIT_2FA_RECOVERY_USED', array( 'left' ), 'success', array() ),
+        '2fa_verify_failed' => array( 'AUDIT_2FA_VERIFY_FAILED', array( 'method' ), 'failed', array() ),
+    );
+
+    /**
+     * The kernel event of an auth.log action, or null (no such event, or a kernel without these events).
+     *
+     * @param string $action
+     * @param string $details "key=value key=value"
+     * @return array|null name, after, result
+     */
+    public static function kernelEvent( $action, $details )
+    {
+        if ( !isset( self::KERNEL_EVENTS[$action] ) || !class_exists( 'expSignInSecondFactor' ) )
+            return null;
+        list( $constant, $keys, $result, $fixed ) = self::KERNEL_EVENTS[$action];
+        if ( !defined( 'expSignInSecondFactor::' . $constant ) )
+            return null;
+        $after = $fixed;
+        if ( $keys && preg_match_all( '/\b([a-z_]+)=([^\s]+)/', (string)$details, $m, PREG_SET_ORDER ) )
+            foreach ( $m as $pair )
+                if ( in_array( $pair[1], $keys, true ) )
+                    $after[$pair[1]] = ctype_digit( $pair[2] ) ? (int)$pair[2] : $pair[2];
+        return array( 'name' => constant( 'expSignInSecondFactor::' . $constant ), 'after' => $after, 'result' => $result );
+    }
+
+    /**
+     * Records an auth.log action as a kernel audit event when it is one (kernelEvent()); never a code or a secret.
+     *
+     * @param string $action
+     * @param string $details
+     * @param int $userID
+     */
+    protected static function kernelAudit( $action, $details, $userID )
+    {
+        if ( $userID <= 0 )
+            return;
+        $event = self::kernelEvent( $action, $details );
+        if ( $event === null || !method_exists( 'expSignInSecondFactor', 'audit' ) )
+            return;
+        $user = eZUser::fetch( $userID );
+        if ( !$user instanceof eZUser )
+            return;
+        try
+        {
+            expSignInSecondFactor::audit( $event['name'], $user, $event['after'], $event['result'] );
+        }
+        catch ( Throwable $e )
+        {
+            eZDebug::writeWarning( 'Could not record the audit event: ' . $e->getMessage(), __METHOD__ );
+        }
+    }
+
+    /**
+     * Names the second step of a sign-in for the kernel's list of sessions ("Your devices"), before the sign-in is
+     * completed: totp, email, recovery or oauth. Without the kernel's session tracking nothing happens.
+     *
+     * @param string $method expUserSession::METHODS (two_factor, single_sign_on)
+     * @param string $detail
+     */
+    public static function nameSignIn( $method, $detail )
+    {
+        if ( class_exists( 'expUserSessionTracker' ) && method_exists( 'expUserSessionTracker', 'setMethodHint' ) )
+            expUserSessionTracker::setMethodHint( $method, $detail );
     }
 
     /**

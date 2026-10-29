@@ -448,6 +448,18 @@ and from the filesystem cache `var/site/cache/sevenx_2fa_pending/`.
 - **Pages** with a secret, a QR code or a pending sign-in are sent with
   `Cache-Control: no-store`; forms are posted with the form token of
   `ezformtoken`.
+- **Security activity and alerts** (Exponential 6.0.15, "Your devices"):
+  turning two-step sign-in on or off, recovery codes issued or used and wrong
+  codes at the second step are recorded in the kernel's audit trail
+  (`access.user.two_factor.enroll`, `.remove`, `.recovery_issued`,
+  `.recovery_used`, `.verify.failed`, through `expSignInSecondFactor::audit()`),
+  besides `var/log/auth.log`. The account then sees them under Security activity
+  (`user/security`), and the kernel mails a security alert when two-step sign-in
+  is turned on or off or a recovery code is used. A session started by the
+  second step is listed on "Your devices" with what it used (authenticator app,
+  e-mail code, recovery code) and a social login as an external account. "Sign
+  out all other sessions" asks "Verify it's you" first, which takes the code of
+  the authenticator app. On an older kernel nothing of this is recorded.
 
 ## Tests
 

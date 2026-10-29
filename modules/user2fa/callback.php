@@ -54,6 +54,8 @@ else
                 return;
             }
             sevenxAuthentication2faHelper::authLog( 'oauth_login_succeeded', 'provider=' . $provider, $userID );
+            // the session is listed on "Your devices" as a sign-in with an external account
+            sevenxAuthentication2faHelper::nameSignIn( 'single_sign_on', 'oauth' );
             eZsevenxUser2faUser::completeLogin( $user );
             return $Module->redirectTo( $redirect );
         }

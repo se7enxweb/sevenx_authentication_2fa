@@ -134,6 +134,7 @@ else
     elseif ( $submittedCode !== '' )
     {
         $valid = false;
+        $usedRecovery = false;
         $data = null;
         $step = false;
 
@@ -146,6 +147,7 @@ else
                 {
                     // A recovery code in place of the app's code (lost phone); it is used up here
                     $valid = $helper->useRecoveryCode( $userID, $submittedCode );
+                    $usedRecovery = $valid;
                     $data = null;
                 }
                 else
@@ -172,6 +174,9 @@ else
             $redirect = sevenxAuthentication2faHelper::normalizeRedirect( $pending['redirect'] );
             $helper->removePendingChallenge();
             sevenxAuthentication2faHelper::authLog( '2fa_verify_succeeded', 'method=' . $pending['method'], $userID );
+            // the session is listed on "Your devices" with the second step it was signed in with
+            sevenxAuthentication2faHelper::nameSignIn( 'two_factor', $usedRecovery ? 'recovery'
+                : ( $pending['method'] === sevenxAuthentication2faHelper::METHOD_EMAIL ? 'email' : 'totp' ) );
             eZsevenxUser2faUser::completeLogin( $user );
             // the password and the app's code count as "Verify it's you" where that is what it would ask
             if ( $data && $step !== false && class_exists( 'expReauth' ) && method_exists( 'expReauth', 'markFreshAfterSignIn' ) )
