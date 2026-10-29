@@ -2,7 +2,7 @@
 
 7x Two-Factor and Social Authentication extension for Exponential 6.x.
 
-Copyright (C) 1998 - 2026 7x. All rights reserved.
+Copyright (C) 1998 - 2026 Exponential Foundation and 7x. All rights reserved.
 Licensed under the GNU General Public License v2.0 (or any later version).
 
 - Version: 1.0.2
